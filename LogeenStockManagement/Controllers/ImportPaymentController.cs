@@ -24,7 +24,7 @@ namespace LogeenStockManagement.Controllers
 
         [HttpGet("{id}")]
         //[Route("ImportPayments/{id}")]
-        public IActionResult GetOne(decimal id)
+        public IActionResult GetOne(int id)
         {
             ImportPayment importPayment = Context.ImportPayments.FirstOrDefault(s => s.Id == id);
 
@@ -42,7 +42,7 @@ namespace LogeenStockManagement.Controllers
 
         [HttpPut("{id}")]
         //[Route("ImportPayments/update")]
-        public void Put(decimal id, ImportPayment value)
+        public void Put(int id, ImportPayment value)
         {
             var importPayment = Context.ImportPayments.FirstOrDefault(s => s.Id == id);
             if (importPayment != null)
@@ -53,7 +53,7 @@ namespace LogeenStockManagement.Controllers
         }
 
         [HttpDelete("{id}")]
-        public void Delete(decimal id)
+        public void Delete(int id)
         {
             var importPayment = Context.ImportPayments.FirstOrDefault(s => s.Id == id);
             if (importPayment != null)
