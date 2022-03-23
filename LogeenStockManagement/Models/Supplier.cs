@@ -9,6 +9,7 @@ namespace LogeenStockManagement.Models
     {
         public Supplier()
         {
+            ExportPayments = new HashSet<ExportPayment>();
             PurchaseBills = new HashSet<PurchaseBill>();
         }
 
@@ -20,6 +21,7 @@ namespace LogeenStockManagement.Models
         public int TypeId { get; set; }
 
         public virtual TraderType Type { get; set; }
+        public virtual ICollection<ExportPayment> ExportPayments { get; set; }
         public virtual ICollection<PurchaseBill> PurchaseBills { get; set; }
     }
 }

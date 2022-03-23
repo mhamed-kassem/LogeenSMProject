@@ -10,9 +10,11 @@ namespace LogeenStockManagement.Models
         public SaleBill()
         {
             ImportPayments = new HashSet<ImportPayment>();
+            SaleBillProducts = new HashSet<SaleBillProduct>();
             SalesReturnsBills = new HashSet<SalesReturnsBill>();
         }
 
+        public int Id { get; set; }
         public string BillCode { get; set; }
         public DateTime Date { get; set; }
         public string BillType { get; set; }
@@ -31,6 +33,7 @@ namespace LogeenStockManagement.Models
         public virtual Stock Stock { get; set; }
         public virtual Tax Tax { get; set; }
         public virtual ICollection<ImportPayment> ImportPayments { get; set; }
+        public virtual ICollection<SaleBillProduct> SaleBillProducts { get; set; }
         public virtual ICollection<SalesReturnsBill> SalesReturnsBills { get; set; }
     }
 }

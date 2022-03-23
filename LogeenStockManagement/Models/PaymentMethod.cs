@@ -10,6 +10,8 @@ namespace LogeenStockManagement.Models
         public PaymentMethod()
         {
             Expenses = new HashSet<Expense>();
+            ExportPayments = new HashSet<ExportPayment>();
+            ImportPayments = new HashSet<ImportPayment>();
             PurchaseBills = new HashSet<PurchaseBill>();
             PurchaseReturnsBills = new HashSet<PurchaseReturnsBill>();
             SaleBills = new HashSet<SaleBill>();
@@ -22,6 +24,8 @@ namespace LogeenStockManagement.Models
         public string Type { get; set; }
 
         public virtual ICollection<Expense> Expenses { get; set; }
+        public virtual ICollection<ExportPayment> ExportPayments { get; set; }
+        public virtual ICollection<ImportPayment> ImportPayments { get; set; }
         public virtual ICollection<PurchaseBill> PurchaseBills { get; set; }
         public virtual ICollection<PurchaseReturnsBill> PurchaseReturnsBills { get; set; }
         public virtual ICollection<SaleBill> SaleBills { get; set; }

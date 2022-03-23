@@ -9,6 +9,7 @@ namespace LogeenStockManagement.Models
     {
         public Client()
         {
+            ImportPayments = new HashSet<ImportPayment>();
             SaleBills = new HashSet<SaleBill>();
         }
 
@@ -21,6 +22,7 @@ namespace LogeenStockManagement.Models
         public int? TypeId { get; set; }
 
         public virtual TraderType Type { get; set; }
+        public virtual ICollection<ImportPayment> ImportPayments { get; set; }
         public virtual ICollection<SaleBill> SaleBills { get; set; }
     }
 }

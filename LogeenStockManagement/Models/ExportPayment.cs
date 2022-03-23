@@ -11,8 +11,12 @@ namespace LogeenStockManagement.Models
         public DateTime Date { get; set; }
         public double PayedBalance { get; set; }
         public string CheckNumber { get; set; }
-        public string PurchaseBillCode { get; set; }
+        public int PurchaseBillId { get; set; }
+        public int SupplierId { get; set; }
+        public int PayMethodId { get; set; }
 
-        public virtual PurchaseBill PurchaseBillCodeNavigation { get; set; }
+        public virtual PaymentMethod PayMethod { get; set; }
+        public virtual PurchaseBill PurchaseBill { get; set; }
+        public virtual Supplier Supplier { get; set; }
     }
 }

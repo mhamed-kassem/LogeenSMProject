@@ -7,6 +7,7 @@ namespace LogeenStockManagement.Models
 {
     public partial class StockProduct
     {
+        public int Id { get; set; }
         public int Amount { get; set; }
         public DateTime ProductionDate { get; set; }
         public int StockId { get; set; }

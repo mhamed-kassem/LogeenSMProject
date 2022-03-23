@@ -58,12 +58,10 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Category");
 
-                entity.HasIndex(e => e.Name, "UQ__Category__737584F6589B22FE")
+                entity.HasIndex(e => e.Name, "UQ__Category__737584F6F0171D11")
                     .IsUnique();
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Description)
                     .IsRequired()
@@ -80,12 +78,10 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Client");
 
-                entity.HasIndex(e => e.Phone, "UQ__Client__5C7E359E2E55BE4E")
+                entity.HasIndex(e => e.Phone, "UQ__Client__5C7E359EAD867081")
                     .IsUnique();
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Address)
                     .HasMaxLength(200)
@@ -112,9 +108,7 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("DiscountForClient");
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.EndDate).HasColumnType("date");
 
@@ -127,17 +121,15 @@ namespace LogeenStockManagement.Models
 
             modelBuilder.Entity<Employee>(entity =>
             {
-                entity.HasKey(e => e.NationalId)
-                    .HasName("EmployeePK");
-
                 entity.ToTable("Employee");
 
-                entity.HasIndex(e => e.Phone, "UQ__Employee__5C7E359E85ECC478")
+                entity.HasIndex(e => e.Phone, "UQ__Employee__5C7E359EA91876DA")
                     .IsUnique();
 
-                entity.Property(e => e.NationalId)
-                    .HasColumnType("numeric(20, 0)")
-                    .HasColumnName("NationalID");
+                entity.HasIndex(e => e.NationalId, "UQ__Employee__E9AA321A59B85CC1")
+                    .IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Address)
                     .IsRequired()
@@ -150,6 +142,10 @@ namespace LogeenStockManagement.Models
                     .IsRequired()
                     .HasMaxLength(100)
                     .IsUnicode(false);
+
+                entity.Property(e => e.NationalId)
+                    .HasColumnType("numeric(20, 0)")
+                    .HasColumnName("NationalID");
 
                 entity.Property(e => e.Phone).HasColumnType("numeric(20, 0)");
 
@@ -174,9 +170,7 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Expense");
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.CheckNumber)
                     .IsRequired()
@@ -190,6 +184,11 @@ namespace LogeenStockManagement.Models
                 entity.Property(e => e.Notes)
                     .HasMaxLength(200)
                     .IsUnicode(false);
+
+                entity.HasOne(d => d.Employee)
+                    .WithMany(p => p.Expenses)
+                    .HasForeignKey(d => d.EmployeeId)
+                    .HasConstraintName("ExpenseEmployeFK");
 
                 entity.HasOne(d => d.PayMethod)
                     .WithMany(p => p.Expenses)
@@ -214,9 +213,7 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("ExpenseType");
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Details)
                     .IsRequired()
@@ -233,9 +230,7 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("ExpiredProduct");
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.DateAdded)
                     .HasColumnType("date")
@@ -256,9 +251,7 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("ExportPayment");
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.CheckNumber)
                     .IsRequired()
@@ -269,25 +262,30 @@ namespace LogeenStockManagement.Models
                     .HasColumnType("date")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.PurchaseBillCode)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.PurchaseBillCodeNavigation)
+                entity.HasOne(d => d.PayMethod)
                     .WithMany(p => p.ExportPayments)
-                    .HasForeignKey(d => d.PurchaseBillCode)
+                    .HasForeignKey(d => d.PayMethodId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("OutPayMethodFK");
+
+                entity.HasOne(d => d.PurchaseBill)
+                    .WithMany(p => p.ExportPayments)
+                    .HasForeignKey(d => d.PurchaseBillId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("OutPayPurchaseBillFK");
+
+                entity.HasOne(d => d.Supplier)
+                    .WithMany(p => p.ExportPayments)
+                    .HasForeignKey(d => d.SupplierId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("OutPaySupplierFK");
             });
 
             modelBuilder.Entity<ImportPayment>(entity =>
             {
                 entity.ToTable("ImportPayment");
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.CheckNumber)
                     .IsRequired()
@@ -298,28 +296,33 @@ namespace LogeenStockManagement.Models
                     .HasColumnType("date")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.SaleBillCode)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.SaleBillCodeNavigation)
+                entity.HasOne(d => d.Client)
                     .WithMany(p => p.ImportPayments)
-                    .HasForeignKey(d => d.SaleBillCode)
+                    .HasForeignKey(d => d.ClientId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("OutPayFK");
+                    .HasConstraintName("InPayClientFK");
+
+                entity.HasOne(d => d.PayMethod)
+                    .WithMany(p => p.ImportPayments)
+                    .HasForeignKey(d => d.PayMethodId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("InPayMethodFK");
+
+                entity.HasOne(d => d.SaleBill)
+                    .WithMany(p => p.ImportPayments)
+                    .HasForeignKey(d => d.SaleBillId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("InPayBillFK");
             });
 
             modelBuilder.Entity<Job>(entity =>
             {
                 entity.ToTable("Job");
 
-                entity.HasIndex(e => e.JobTitle, "UQ__Job__44C68B9F366C41C9")
+                entity.HasIndex(e => e.JobTitle, "UQ__Job__44C68B9F7797CA43")
                     .IsUnique();
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.JobDescription)
                     .HasMaxLength(200)
@@ -335,12 +338,10 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("PaymentMethod");
 
-                entity.HasIndex(e => e.Name, "UQ__PaymentM__737584F6E001D9DF")
+                entity.HasIndex(e => e.Name, "UQ__PaymentM__737584F68060D9A9")
                     .IsUnique();
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -357,12 +358,10 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Product");
 
-                entity.HasIndex(e => e.Name, "UQ__Product__737584F69A03EF09")
+                entity.HasIndex(e => e.Name, "UQ__Product__737584F6BC80717D")
                     .IsUnique();
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Barcode)
                     .HasMaxLength(100)
@@ -386,20 +385,20 @@ namespace LogeenStockManagement.Models
 
             modelBuilder.Entity<ProductTransfered>(entity =>
             {
-                entity.HasNoKey();
-
                 entity.ToTable("ProductTransfered");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.ProductionDate).HasColumnType("date");
 
                 entity.HasOne(d => d.Product)
-                    .WithMany()
+                    .WithMany(p => p.ProductTransfereds)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ProductTransferedTypeFK");
 
                 entity.HasOne(d => d.TransferOperation)
-                    .WithMany()
+                    .WithMany(p => p.ProductTransfereds)
                     .HasForeignKey(d => d.TransferOperationId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ProductTransferOPerationFK");
@@ -407,10 +406,12 @@ namespace LogeenStockManagement.Models
 
             modelBuilder.Entity<PurchaseBill>(entity =>
             {
-                entity.HasKey(e => e.BillCode)
-                    .HasName("PurchasePK");
-
                 entity.ToTable("PurchaseBill");
+
+                entity.HasIndex(e => e.BillCode, "UQ__Purchase__1CC9F83E29B160CD")
+                    .IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.BillCode)
                     .HasMaxLength(50)
@@ -457,34 +458,31 @@ namespace LogeenStockManagement.Models
 
             modelBuilder.Entity<PurchaseProduct>(entity =>
             {
-                entity.HasNoKey();
-
                 entity.ToTable("PurchaseProduct");
 
-                entity.Property(e => e.PurchaseBillCode)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.HasOne(d => d.Product)
-                    .WithMany()
+                    .WithMany(p => p.PurchaseProducts)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("PurchaseProductFK");
+                    .HasConstraintName("PurchaseProductTypeFK");
 
-                entity.HasOne(d => d.PurchaseBillCodeNavigation)
-                    .WithMany()
-                    .HasForeignKey(d => d.PurchaseBillCode)
+                entity.HasOne(d => d.PurchaseBill)
+                    .WithMany(p => p.PurchaseProducts)
+                    .HasForeignKey(d => d.PurchaseBillId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("PurchaseProductBillFK");
             });
 
             modelBuilder.Entity<PurchaseReturnsBill>(entity =>
             {
-                entity.HasKey(e => e.Code)
-                    .HasName("PurchaseReturnPK");
-
                 entity.ToTable("PurchaseReturnsBill");
+
+                entity.HasIndex(e => e.Code, "UQ__Purchase__A25C5AA7A7A73F46")
+                    .IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -496,20 +494,15 @@ namespace LogeenStockManagement.Models
 
                 entity.Property(e => e.PayMethodId).HasColumnName("payMethodId");
 
-                entity.Property(e => e.PurchaseBillCode)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-
                 entity.HasOne(d => d.PayMethod)
                     .WithMany(p => p.PurchaseReturnsBills)
                     .HasForeignKey(d => d.PayMethodId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("PurchaseReturnPayMethodFK");
 
-                entity.HasOne(d => d.PurchaseBillCodeNavigation)
+                entity.HasOne(d => d.PurchaseBill)
                     .WithMany(p => p.PurchaseReturnsBills)
-                    .HasForeignKey(d => d.PurchaseBillCode)
+                    .HasForeignKey(d => d.PurchaseBillId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("PurchaseReturnPurchaseBillFK");
 
@@ -521,10 +514,12 @@ namespace LogeenStockManagement.Models
 
             modelBuilder.Entity<SaleBill>(entity =>
             {
-                entity.HasKey(e => e.BillCode)
-                    .HasName("SaleBillPK");
-
                 entity.ToTable("SaleBill");
+
+                entity.HasIndex(e => e.BillCode, "UQ__SaleBill__1CC9F83E88BECC50")
+                    .IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.BillCode)
                     .HasMaxLength(50)
@@ -571,34 +566,31 @@ namespace LogeenStockManagement.Models
 
             modelBuilder.Entity<SaleBillProduct>(entity =>
             {
-                entity.HasNoKey();
-
                 entity.ToTable("SaleBillProduct");
 
-                entity.Property(e => e.SaleBillCode)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.HasOne(d => d.Product)
-                    .WithMany()
+                    .WithMany(p => p.SaleBillProducts)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("SaleProductTypeFK");
 
-                entity.HasOne(d => d.SaleBillCodeNavigation)
-                    .WithMany()
-                    .HasForeignKey(d => d.SaleBillCode)
+                entity.HasOne(d => d.SaleBill)
+                    .WithMany(p => p.SaleBillProducts)
+                    .HasForeignKey(d => d.SaleBillId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("SaleProductBillFK");
+                    .HasConstraintName("SaleBillProductBillFK");
             });
 
             modelBuilder.Entity<SalesReturnsBill>(entity =>
             {
-                entity.HasKey(e => e.Code)
-                    .HasName("SaleReturnPK");
-
                 entity.ToTable("SalesReturnsBill");
+
+                entity.HasIndex(e => e.Code, "UQ__SalesRet__A25C5AA70B5443F8")
+                    .IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Code)
                     .HasMaxLength(50)
@@ -608,20 +600,15 @@ namespace LogeenStockManagement.Models
                     .HasColumnType("date")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.SaleBillCode)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-
                 entity.HasOne(d => d.PayMethod)
                     .WithMany(p => p.SalesReturnsBills)
                     .HasForeignKey(d => d.PayMethodId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("SaleReturnPayMethodFK");
 
-                entity.HasOne(d => d.SaleBillCodeNavigation)
+                entity.HasOne(d => d.SaleBill)
                     .WithMany(p => p.SalesReturnsBills)
-                    .HasForeignKey(d => d.SaleBillCode)
+                    .HasForeignKey(d => d.SaleBillId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("SaleReturnSaleBillFK");
 
@@ -635,15 +622,13 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Stock");
 
-                entity.HasIndex(e => e.Name, "UQ__Stock__737584F60F9BEEFB")
+                entity.HasIndex(e => e.Name, "UQ__Stock__737584F6F6B94B0F")
                     .IsUnique();
 
-                entity.HasIndex(e => e.Address, "UQ__Stock__7D0C3F3247A39C4E")
+                entity.HasIndex(e => e.Address, "UQ__Stock__7D0C3F322F23BC8A")
                     .IsUnique();
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Address)
                     .IsRequired()
@@ -658,20 +643,20 @@ namespace LogeenStockManagement.Models
 
             modelBuilder.Entity<StockProduct>(entity =>
             {
-                entity.HasNoKey();
-
                 entity.ToTable("StockProduct");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.ProductionDate).HasColumnType("date");
 
                 entity.HasOne(d => d.Product)
-                    .WithMany()
+                    .WithMany(p => p.StockProducts)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ProductTypeFK");
 
                 entity.HasOne(d => d.Stock)
-                    .WithMany()
+                    .WithMany(p => p.StockProducts)
                     .HasForeignKey(d => d.StockId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ProductStockFK");
@@ -681,15 +666,13 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Supplier");
 
-                entity.HasIndex(e => e.Phone, "UQ__Supplier__5C7E359ECA8875A0")
+                entity.HasIndex(e => e.Phone, "UQ__Supplier__5C7E359E6642A318")
                     .IsUnique();
 
-                entity.HasIndex(e => e.Name, "UQ__Supplier__737584F6B005F3F5")
+                entity.HasIndex(e => e.Name, "UQ__Supplier__737584F61E5160D6")
                     .IsUnique();
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Address)
                     .IsRequired()
@@ -714,12 +697,10 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Tax");
 
-                entity.HasIndex(e => e.Name, "UQ__Tax__737584F6B9EC7EDD")
+                entity.HasIndex(e => e.Name, "UQ__Tax__737584F6CA5B32B0")
                     .IsUnique();
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Description)
                     .IsRequired()
@@ -736,12 +717,10 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("TraderType");
 
-                entity.HasIndex(e => e.TypeName, "UQ__TraderTy__D4E7DFA80953F4A3")
+                entity.HasIndex(e => e.TypeName, "UQ__TraderTy__D4E7DFA8A2818C9A")
                     .IsUnique();
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(200)
@@ -757,9 +736,7 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("TransferOperation");
 
-                entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
-                    .HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Date)
                     .HasColumnType("date")
@@ -768,6 +745,12 @@ namespace LogeenStockManagement.Models
                 entity.Property(e => e.Notes)
                     .HasMaxLength(200)
                     .IsUnicode(false);
+
+                entity.HasOne(d => d.Employee)
+                    .WithMany(p => p.TransferOperations)
+                    .HasForeignKey(d => d.EmployeeId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("TransferEmployeeFK");
 
                 entity.HasOne(d => d.FromStock)
                     .WithMany(p => p.TransferOperationFromStocks)

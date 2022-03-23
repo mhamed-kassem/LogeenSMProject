@@ -13,6 +13,7 @@ namespace LogeenStockManagement.Models
             Expenses = new HashSet<Expense>();
             PurchaseBills = new HashSet<PurchaseBill>();
             SaleBills = new HashSet<SaleBill>();
+            StockProducts = new HashSet<StockProduct>();
             TransferOperationFromStocks = new HashSet<TransferOperation>();
             TransferOperationToStocks = new HashSet<TransferOperation>();
         }
@@ -25,6 +26,7 @@ namespace LogeenStockManagement.Models
         public virtual ICollection<Expense> Expenses { get; set; }
         public virtual ICollection<PurchaseBill> PurchaseBills { get; set; }
         public virtual ICollection<SaleBill> SaleBills { get; set; }
+        public virtual ICollection<StockProduct> StockProducts { get; set; }
         public virtual ICollection<TransferOperation> TransferOperationFromStocks { get; set; }
         public virtual ICollection<TransferOperation> TransferOperationToStocks { get; set; }
     }
