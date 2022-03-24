@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+//using Newtonsoft.Json;
 
 #nullable disable
 
@@ -26,11 +28,17 @@ namespace LogeenStockManagement.Models
         public int ExpiryPeriod { get; set; }
         public int CategoryId { get; set; }
 
+        [JsonIgnore]
         public virtual Category Category { get; set; }
+        [JsonIgnore]
         public virtual ICollection<ExpiredProduct> ExpiredProducts { get; set; }
+        [JsonIgnore]
         public virtual ICollection<ProductTransfered> ProductTransfereds { get; set; }
+        [JsonIgnore]
         public virtual ICollection<PurchaseProduct> PurchaseProducts { get; set; }
+        [JsonIgnore]
         public virtual ICollection<SaleBillProduct> SaleBillProducts { get; set; }
+        [JsonIgnore]
         public virtual ICollection<StockProduct> StockProducts { get; set; }
     }
 }
