@@ -28,6 +28,7 @@ namespace LogeenStockManagement.Models
         public int ExpiryPeriod { get; set; }
         public int CategoryId { get; set; }
 
+
         [JsonIgnore]
         public virtual Category Category { get; set; }
         [JsonIgnore]
