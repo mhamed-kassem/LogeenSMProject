@@ -11,47 +11,47 @@ namespace LogeenStockManagement.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class SaleBillsController : ControllerBase
     {
         private readonly LogeenStockManagementContext _context;
 
-        public ProductsController(LogeenStockManagementContext context)
+        public SaleBillsController(LogeenStockManagementContext context)
         {
             _context = context;
         }
 
-        // GET: api/Products
+        // GET: api/SaleBills
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<SaleBill>>> GetSaleBills()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.SaleBills.ToListAsync();
         }
 
-        // GET: api/Products/5
+        // GET: api/SaleBills/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<SaleBill>> GetSaleBill(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var saleBill = await _context.SaleBills.FindAsync(id);
 
-            if (product == null)
+            if (saleBill == null)
             {
                 return NotFound();
             }
 
-            return product;
+            return saleBill;
         }
 
-        // PUT: api/Products/5
+        // PUT: api/SaleBills/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        public async Task<IActionResult> PutSaleBill(int id, SaleBill saleBill)
         {
-            if (id != product.Id)
+            if (id != saleBill.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(product).State = EntityState.Modified;
+            _context.Entry(saleBill).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +59,7 @@ namespace LogeenStockManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ProductExists(id))
+                if (!SaleBillExists(id))
                 {
                     return NotFound();
                 }
@@ -72,36 +72,36 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
-        // POST: api/Products
+        // POST: api/SaleBills
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<SaleBill>> PostSaleBill(SaleBill saleBill)
         {
-            _context.Products.Add(product);
+            _context.SaleBills.Add(saleBill);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            return CreatedAtAction("GetSaleBill", new { id = saleBill.Id }, saleBill);
         }
 
-        // DELETE: api/Products/5
+        // DELETE: api/SaleBills/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> DeleteSaleBill(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
+            var saleBill = await _context.SaleBills.FindAsync(id);
+            if (saleBill == null)
             {
                 return NotFound();
             }
 
-            _context.Products.Remove(product);
+            _context.SaleBills.Remove(saleBill);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool ProductExists(int id)
+        private bool SaleBillExists(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return _context.SaleBills.Any(e => e.Id == id);
         }
     }
 }

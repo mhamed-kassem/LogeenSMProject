@@ -11,47 +11,47 @@ namespace LogeenStockManagement.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class EmployeesController : ControllerBase
     {
         private readonly LogeenStockManagementContext _context;
 
-        public ProductsController(LogeenStockManagementContext context)
+        public EmployeesController(LogeenStockManagementContext context)
         {
             _context = context;
         }
 
-        // GET: api/Products
+        // GET: api/Employees
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.Employees.ToListAsync();
         }
 
-        // GET: api/Products/5
+        // GET: api/Employees/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<Employee>> GetEmployee(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var employee = await _context.Employees.FindAsync(id);
 
-            if (product == null)
+            if (employee == null)
             {
                 return NotFound();
             }
 
-            return product;
+            return employee;
         }
 
-        // PUT: api/Products/5
+        // PUT: api/Employees/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        public async Task<IActionResult> PutEmployee(int id, Employee employee)
         {
-            if (id != product.Id)
+            if (id != employee.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(product).State = EntityState.Modified;
+            _context.Entry(employee).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +59,7 @@ namespace LogeenStockManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ProductExists(id))
+                if (!EmployeeExists(id))
                 {
                     return NotFound();
                 }
@@ -72,36 +72,36 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
-        // POST: api/Products
+        // POST: api/Employees
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<Employee>> PostEmployee(Employee employee)
         {
-            _context.Products.Add(product);
+            _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            return CreatedAtAction("GetEmployee", new { id = employee.Id }, employee);
         }
 
-        // DELETE: api/Products/5
+        // DELETE: api/Employees/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> DeleteEmployee(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
+            var employee = await _context.Employees.FindAsync(id);
+            if (employee == null)
             {
                 return NotFound();
             }
 
-            _context.Products.Remove(product);
+            _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool ProductExists(int id)
+        private bool EmployeeExists(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return _context.Employees.Any(e => e.Id == id);
         }
     }
 }

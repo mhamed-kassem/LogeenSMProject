@@ -11,47 +11,47 @@ namespace LogeenStockManagement.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class ExpenseTypesController : ControllerBase
     {
         private readonly LogeenStockManagementContext _context;
 
-        public ProductsController(LogeenStockManagementContext context)
+        public ExpenseTypesController(LogeenStockManagementContext context)
         {
             _context = context;
         }
 
-        // GET: api/Products
+        // GET: api/ExpenseTypes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<ExpenseType>>> GetExpenseTypes()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.ExpenseTypes.ToListAsync();
         }
 
-        // GET: api/Products/5
+        // GET: api/ExpenseTypes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ExpenseType>> GetExpenseType(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var expenseType = await _context.ExpenseTypes.FindAsync(id);
 
-            if (product == null)
+            if (expenseType == null)
             {
                 return NotFound();
             }
 
-            return product;
+            return expenseType;
         }
 
-        // PUT: api/Products/5
+        // PUT: api/ExpenseTypes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        public async Task<IActionResult> PutExpenseType(int id, ExpenseType expenseType)
         {
-            if (id != product.Id)
+            if (id != expenseType.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(product).State = EntityState.Modified;
+            _context.Entry(expenseType).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +59,7 @@ namespace LogeenStockManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ProductExists(id))
+                if (!ExpenseTypeExists(id))
                 {
                     return NotFound();
                 }
@@ -72,36 +72,36 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
-        // POST: api/Products
+        // POST: api/ExpenseTypes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<ExpenseType>> PostExpenseType(ExpenseType expenseType)
         {
-            _context.Products.Add(product);
+            _context.ExpenseTypes.Add(expenseType);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            return CreatedAtAction("GetExpenseType", new { id = expenseType.Id }, expenseType);
         }
 
-        // DELETE: api/Products/5
+        // DELETE: api/ExpenseTypes/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> DeleteExpenseType(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
+            var expenseType = await _context.ExpenseTypes.FindAsync(id);
+            if (expenseType == null)
             {
                 return NotFound();
             }
 
-            _context.Products.Remove(product);
+            _context.ExpenseTypes.Remove(expenseType);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool ProductExists(int id)
+        private bool ExpenseTypeExists(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return _context.ExpenseTypes.Any(e => e.Id == id);
         }
     }
 }

@@ -11,47 +11,47 @@ namespace LogeenStockManagement.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class PurchaseBillsController : ControllerBase
     {
         private readonly LogeenStockManagementContext _context;
 
-        public ProductsController(LogeenStockManagementContext context)
+        public PurchaseBillsController(LogeenStockManagementContext context)
         {
             _context = context;
         }
 
-        // GET: api/Products
+        // GET: api/PurchaseBills
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<PurchaseBill>>> GetPurchaseBills()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.PurchaseBills.ToListAsync();
         }
 
-        // GET: api/Products/5
+        // GET: api/PurchaseBills/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<PurchaseBill>> GetPurchaseBill(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var purchaseBill = await _context.PurchaseBills.FindAsync(id);
 
-            if (product == null)
+            if (purchaseBill == null)
             {
                 return NotFound();
             }
 
-            return product;
+            return purchaseBill;
         }
 
-        // PUT: api/Products/5
+        // PUT: api/PurchaseBills/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        public async Task<IActionResult> PutPurchaseBill(int id, PurchaseBill purchaseBill)
         {
-            if (id != product.Id)
+            if (id != purchaseBill.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(product).State = EntityState.Modified;
+            _context.Entry(purchaseBill).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +59,7 @@ namespace LogeenStockManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ProductExists(id))
+                if (!PurchaseBillExists(id))
                 {
                     return NotFound();
                 }
@@ -72,36 +72,36 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
-        // POST: api/Products
+        // POST: api/PurchaseBills
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<PurchaseBill>> PostPurchaseBill(PurchaseBill purchaseBill)
         {
-            _context.Products.Add(product);
+            _context.PurchaseBills.Add(purchaseBill);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            return CreatedAtAction("GetPurchaseBill", new { id = purchaseBill.Id }, purchaseBill);
         }
 
-        // DELETE: api/Products/5
+        // DELETE: api/PurchaseBills/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> DeletePurchaseBill(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
+            var purchaseBill = await _context.PurchaseBills.FindAsync(id);
+            if (purchaseBill == null)
             {
                 return NotFound();
             }
 
-            _context.Products.Remove(product);
+            _context.PurchaseBills.Remove(purchaseBill);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool ProductExists(int id)
+        private bool PurchaseBillExists(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return _context.PurchaseBills.Any(e => e.Id == id);
         }
     }
 }

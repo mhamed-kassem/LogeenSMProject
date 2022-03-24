@@ -11,47 +11,47 @@ namespace LogeenStockManagement.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class PaymentMethodsController : ControllerBase
     {
         private readonly LogeenStockManagementContext _context;
 
-        public ProductsController(LogeenStockManagementContext context)
+        public PaymentMethodsController(LogeenStockManagementContext context)
         {
             _context = context;
         }
 
-        // GET: api/Products
+        // GET: api/PaymentMethods
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<PaymentMethod>>> GetPaymentMethods()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.PaymentMethods.ToListAsync();
         }
 
-        // GET: api/Products/5
+        // GET: api/PaymentMethods/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<PaymentMethod>> GetPaymentMethod(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var paymentMethod = await _context.PaymentMethods.FindAsync(id);
 
-            if (product == null)
+            if (paymentMethod == null)
             {
                 return NotFound();
             }
 
-            return product;
+            return paymentMethod;
         }
 
-        // PUT: api/Products/5
+        // PUT: api/PaymentMethods/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        public async Task<IActionResult> PutPaymentMethod(int id, PaymentMethod paymentMethod)
         {
-            if (id != product.Id)
+            if (id != paymentMethod.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(product).State = EntityState.Modified;
+            _context.Entry(paymentMethod).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +59,7 @@ namespace LogeenStockManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ProductExists(id))
+                if (!PaymentMethodExists(id))
                 {
                     return NotFound();
                 }
@@ -72,36 +72,36 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
-        // POST: api/Products
+        // POST: api/PaymentMethods
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<PaymentMethod>> PostPaymentMethod(PaymentMethod paymentMethod)
         {
-            _context.Products.Add(product);
+            _context.PaymentMethods.Add(paymentMethod);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            return CreatedAtAction("GetPaymentMethod", new { id = paymentMethod.Id }, paymentMethod);
         }
 
-        // DELETE: api/Products/5
+        // DELETE: api/PaymentMethods/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> DeletePaymentMethod(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
+            var paymentMethod = await _context.PaymentMethods.FindAsync(id);
+            if (paymentMethod == null)
             {
                 return NotFound();
             }
 
-            _context.Products.Remove(product);
+            _context.PaymentMethods.Remove(paymentMethod);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool ProductExists(int id)
+        private bool PaymentMethodExists(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return _context.PaymentMethods.Any(e => e.Id == id);
         }
     }
 }

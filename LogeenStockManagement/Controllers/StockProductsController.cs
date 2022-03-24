@@ -11,47 +11,47 @@ namespace LogeenStockManagement.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class StockProductsController : ControllerBase
     {
         private readonly LogeenStockManagementContext _context;
 
-        public ProductsController(LogeenStockManagementContext context)
+        public StockProductsController(LogeenStockManagementContext context)
         {
             _context = context;
         }
 
-        // GET: api/Products
+        // GET: api/StockProducts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<StockProduct>>> GetStockProducts()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.StockProducts.ToListAsync();
         }
 
-        // GET: api/Products/5
+        // GET: api/StockProducts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<StockProduct>> GetStockProduct(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var stockProduct = await _context.StockProducts.FindAsync(id);
 
-            if (product == null)
+            if (stockProduct == null)
             {
                 return NotFound();
             }
 
-            return product;
+            return stockProduct;
         }
 
-        // PUT: api/Products/5
+        // PUT: api/StockProducts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        public async Task<IActionResult> PutStockProduct(int id, StockProduct stockProduct)
         {
-            if (id != product.Id)
+            if (id != stockProduct.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(product).State = EntityState.Modified;
+            _context.Entry(stockProduct).State = EntityState.Modified;
 
             try
             {
@@ -59,7 +59,7 @@ namespace LogeenStockManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!ProductExists(id))
+                if (!StockProductExists(id))
                 {
                     return NotFound();
                 }
@@ -72,36 +72,36 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
-        // POST: api/Products
+        // POST: api/StockProducts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<ActionResult<StockProduct>> PostStockProduct(StockProduct stockProduct)
         {
-            _context.Products.Add(product);
+            _context.StockProducts.Add(stockProduct);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            return CreatedAtAction("GetStockProduct", new { id = stockProduct.Id }, stockProduct);
         }
 
-        // DELETE: api/Products/5
+        // DELETE: api/StockProducts/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> DeleteStockProduct(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
+            var stockProduct = await _context.StockProducts.FindAsync(id);
+            if (stockProduct == null)
             {
                 return NotFound();
             }
 
-            _context.Products.Remove(product);
+            _context.StockProducts.Remove(stockProduct);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool ProductExists(int id)
+        private bool StockProductExists(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return _context.StockProducts.Any(e => e.Id == id);
         }
     }
 }
