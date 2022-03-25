@@ -46,7 +46,9 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutClient(int id, Client client)
         {
-            if (id != client.Id)
+            //validation section1
+
+            if (id != client.Id || IsClientDataNotValid(client))
             {
                 return BadRequest();
             }
@@ -77,6 +79,11 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<Client>> PostClient(Client client)
         {
+            //validation section2
+            if (IsClientDataNotValid(client))
+            {
+                return BadRequest();
+            }
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
 
@@ -92,7 +99,8 @@ namespace LogeenStockManagement.Controllers
             {
                 return NotFound();
             }
-
+            //validation section3
+            if (client.ImportPayments.Count > 0 || client.SaleBills.Count > 0) { return BadRequest(); }
             _context.Clients.Remove(client);
             await _context.SaveChangesAsync();
 
@@ -102,6 +110,47 @@ namespace LogeenStockManagement.Controllers
         private bool ClientExists(int id)
         {
             return _context.Clients.Any(e => e.Id == id);
+        }
+
+        public bool IsClientDataNotValid(Client client)
+        {
+            //--Validation 
+            /*
+             * ID INT IDENTITY(1,1),
+            [Name] VARCHAR(50) NOT NULL,
+            BalanceOutstand FLOAT,
+            Phone NUMERIC(20) NOT NULL UNIQUE,
+            [Address] VARCHAR(200),
+            TradeName VARCHAR(100),
+            TypeId INT,
+            Constraint ClientPK PRIMARY KEY (ID),
+            Constraint ClientTypeFK FOREIGN KEY (TypeId) REFERENCES TraderType(ID)
+            */
+            //foreign keys can not refer to Not Existed
+            bool TypeIdExisted = _context.TraderTypes.Any(t => t.Id == client.TypeId);
+
+            // UNIQUE Prorerty must to be Not Existed before
+            bool IDExisted = _context.Clients.Any(c => c.Id == client.Id && c.Id != client.Id);
+            bool PhoneExisted = _context.Clients.Any(c => c.Phone == client.Phone && c.Phone != client.Phone);
+
+            //Not NUll properties + chech Foreign and Uniqe results
+
+            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
+                client.Name == null ||
+                client.Phone==0||
+                client.TypeId == null || //again because it have both not null and unique 
+                IDExisted ||
+                PhoneExisted ||
+                !TypeIdExisted
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
     }
 }

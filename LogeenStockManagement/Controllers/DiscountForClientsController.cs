@@ -46,7 +46,7 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutDiscountForClient(int id, DiscountForClient discountForClient)
         {
-            if (id != discountForClient.Id)
+            if (id != discountForClient.Id || IsDiscountForClientsNotValid(discountForClient))
             {
                 return BadRequest();
             }
@@ -77,6 +77,10 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<DiscountForClient>> PostDiscountForClient(DiscountForClient discountForClient)
         {
+            if (IsDiscountForClientsNotValid(discountForClient))
+            {
+                return BadRequest();
+            }
             _context.DiscountForClients.Add(discountForClient);
             await _context.SaveChangesAsync();
 
@@ -93,6 +97,7 @@ namespace LogeenStockManagement.Controllers
                 return NotFound();
             }
 
+
             _context.DiscountForClients.Remove(discountForClient);
             await _context.SaveChangesAsync();
 
@@ -103,5 +108,41 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.DiscountForClients.Any(e => e.Id == id);
         }
+
+        public bool IsDiscountForClientsNotValid(DiscountForClient discountForClient)
+        {
+            //--Validation 
+              /*ID INT IDENTITY(1, 1),
+              DiscountValue FLOAT NOT NULL,
+              Notes VARCHAR(200),
+              StartDate DATE NOT NULL,
+              EndDate DATE NOT NULL,
+              Constraint DiscountPK PRIMARY KEY(ID)
+              */
+            // UNIQUE Prorerty must to be Not Existed before                                               
+            bool IdExisted = _context.DiscountForClients.Any((d) => d.Id == discountForClient.Id && d.Id != discountForClient.Id);
+
+            //Not NUll properties + chech Foreign and Uniqe result
+
+            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
+                discountForClient.Id==0||
+                //discountForClient.DiscountValue==0||
+                double.IsNaN(discountForClient.DiscountValue) ||
+                IdExisted||
+                
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+
+
+        }
+
+        
     }
 }

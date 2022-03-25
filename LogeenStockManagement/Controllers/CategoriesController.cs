@@ -46,7 +46,8 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCategory(int id, Category category)
         {
-            if (id != category.Id)
+            //validation section1
+            if (id != category.Id || IsCategoryDataNotValid(category))
             {
                 return BadRequest();
             }
@@ -77,6 +78,11 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
+            //validation section2
+            if (IsCategoryDataNotValid(category))
+            {
+                return BadRequest();
+            }
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
@@ -92,7 +98,9 @@ namespace LogeenStockManagement.Controllers
             {
                 return NotFound();
             }
+            //validation section3
 
+            if (category.Products.Count > 0) { return BadRequest(); }
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
 
@@ -103,5 +111,39 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.Categories.Any(e => e.Id == id);
         }
+
+        public bool IsCategoryDataNotValid(Category category)
+        {
+            //--Validation 
+            /*
+             * ID INT IDENTITY(1,1),
+            [Name] VARCHAR(50) NOT NULL UNIQUE,
+            [Description] VARCHAR(200) NOT NULL,
+            Constraint CategoryPK PRIMARY KEY (ID)
+            */
+            // UNIQUE Prorerty must to be Not Existed before
+            bool IDExisted = _context.Categories.Any(c => c.Id == category.Id && c.Id != category.Id);
+            bool NameExisted = _context.Categories.Any(c => c.Name == category.Name && c.Name != category.Name);
+
+            //Not NUll properties +  Uniqe results
+
+            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
+                category.Name == null ||
+                category.Description == null ||
+                category.Id==0||
+                double.IsNaN(category.Id) ||
+                IDExisted || // send bad request-NotValid- when foreign key Not Existed 
+                NameExisted
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
     }
 }
