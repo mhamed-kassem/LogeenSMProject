@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/Clients/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutClient(int id, Client client)
         {
@@ -100,7 +99,7 @@ namespace LogeenStockManagement.Controllers
                 return NotFound();
             }
             //validation section3
-            if (client.ImportPayments.Count > 0 || client.SaleBills.Count > 0) { return BadRequest(); }
+            if (client.BalanceOutstand>0||client.ImportPayments.Count > 0 || client.SaleBills.Count > 0) { return BadRequest(); }
             _context.Clients.Remove(client);
             await _context.SaveChangesAsync();
 
@@ -126,23 +125,15 @@ namespace LogeenStockManagement.Controllers
             Constraint ClientPK PRIMARY KEY (ID),
             Constraint ClientTypeFK FOREIGN KEY (TypeId) REFERENCES TraderType(ID)
             */
+
             //foreign keys can not refer to Not Existed
             bool TypeIdExisted = _context.TraderTypes.Any(t => t.Id == client.TypeId);
 
             // UNIQUE Prorerty must to be Not Existed before
-            bool IDExisted = _context.Clients.Any(c => c.Id == client.Id && c.Id != client.Id);
-            bool PhoneExisted = _context.Clients.Any(c => c.Phone == client.Phone && c.Phone != client.Phone);
+            bool PhoneExisted = _context.Clients.Any(c => c.Phone == client.Phone && c.Id != client.Id);
 
             //Not NUll properties + chech Foreign and Uniqe results
-
-            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
-                client.Name == null ||
-                client.Phone==0||
-                client.TypeId == null || //again because it have both not null and unique 
-                IDExisted ||
-                PhoneExisted ||
-                !TypeIdExisted
-                )
+            if (client.Name == null || client.Phone == 0 || PhoneExisted || !TypeIdExisted)
             {
                 return true;
             }

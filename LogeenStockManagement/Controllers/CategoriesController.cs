@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/Categories/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCategory(int id, Category category)
         {
@@ -74,7 +73,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/Categories
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
@@ -121,20 +119,12 @@ namespace LogeenStockManagement.Controllers
             [Description] VARCHAR(200) NOT NULL,
             Constraint CategoryPK PRIMARY KEY (ID)
             */
+
             // UNIQUE Prorerty must to be Not Existed before
-            bool IDExisted = _context.Categories.Any(c => c.Id == category.Id && c.Id != category.Id);
-            bool NameExisted = _context.Categories.Any(c => c.Name == category.Name && c.Name != category.Name);
+            bool NameExisted = _context.Categories.Any(c => c.Name == category.Name && c.Id != category.Id);
 
             //Not NUll properties +  Uniqe results
-
-            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
-                category.Name == null ||
-                category.Description == null ||
-                category.Id==0||
-                double.IsNaN(category.Id) ||
-                IDExisted || // send bad request-NotValid- when foreign key Not Existed 
-                NameExisted
-                )
+            if (  category.Name == null ||category.Description == null || NameExisted)
             {
                 return true;
             }
@@ -142,7 +132,7 @@ namespace LogeenStockManagement.Controllers
             {
                 return false;
             }
-
+             
         }
 
     }
