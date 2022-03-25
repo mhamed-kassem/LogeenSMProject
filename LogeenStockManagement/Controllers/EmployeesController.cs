@@ -132,20 +132,19 @@ namespace LogeenStockManagement.Controllers
             bool StockExisted = _context.Stocks.Any(s => s.Id == employee.StockId);
             bool JobExisted = _context.Jobs.Any(j => j.Id == employee.JobId);
 
-            // UNIQUE Prorerty must to be Not Existed before
-            bool NationalIDExisted = _context.Employees.Any(e => e.NationalId == employee.NationalId);
-            bool PhoneExisted = _context.Employees.Any(e => e.Phone == employee.Phone);
-
-            //Not NUll properties + chech Foreign and Uniqe results
-
+            // UNIQUE Prorerty must to be Not Existed before                                               
+            bool NationalIDExisted = _context.Employees.Any((e) => e.NationalId == employee.NationalId && e.Id != employee.Id);
+            bool PhoneExisted = _context.Employees.Any((e) => e.Phone == employee.Phone && e.Id != employee.Id);
+            
+            //Not NUll properties + chech Foreign and Uniqe result
             if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
                 employee.Name == null ||
                 employee.Address == null ||
                 employee.NationalId == null || //again because it have both not null and unique 
-                double.IsNaN(employee.Salary) ||//check null values but for numeric types
+                employee.Salary==0 ||//check null values but for numeric types
                 !StockExisted || // send bad request-NotValid- when foreign key Not Existed 
                 !JobExisted ||
-                NationalIDExisted || //send bad request-NotValid- when unique is Existed before
+                NationalIDExisted|| //send bad request-NotValid- when unique is Existed before
                 PhoneExisted
                 )
             {
@@ -155,6 +154,8 @@ namespace LogeenStockManagement.Controllers
             {
                 return false;
             }
+
+
 
         }
 
