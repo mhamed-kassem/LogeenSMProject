@@ -98,6 +98,9 @@ namespace LogeenStockManagement.Controllers
                 return NotFound();
             }
 
+            //validation section3
+            if (employee.TransferOperations.Count > 0 || employee.Expenses.Count > 0) { return BadRequest(); }
+            
             _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
 
