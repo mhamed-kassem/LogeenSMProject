@@ -33,8 +33,8 @@ namespace LogeenStockManagement
             {
                 options.UseSqlServer(Configuration.GetConnectionString("LogeenConnectionString"));
             });
-            
-
+            //cors
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,6 +44,12 @@ namespace LogeenStockManagement
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            //cors
+            app.UseCors(options =>
+            options.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 
             app.UseHttpsRedirection();
 
