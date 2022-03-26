@@ -46,8 +46,7 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPaymentMethod(int id, PaymentMethod paymentMethod)
         {
-            //validation section1
-            if (id != paymentMethod.Id ||IsPaymentMethodDataNotValid(paymentMethod))
+            if (id != paymentMethod.Id || IsPaymentMethodDataNotValid(paymentMethod))
             {
                 return BadRequest();
             }
@@ -78,11 +77,7 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<PaymentMethod>> PostPaymentMethod(PaymentMethod paymentMethod)
         {
-            //validation section2
-            if (IsPaymentMethodDataNotValid(paymentMethod))
-            {
-                return BadRequest();
-            }
+            if (IsPaymentMethodDataNotValid(paymentMethod)) { return BadRequest(); }
             _context.PaymentMethods.Add(paymentMethod);
             await _context.SaveChangesAsync();
 
@@ -93,21 +88,21 @@ namespace LogeenStockManagement.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePaymentMethod(int id)
         {
-
             var paymentMethod = await _context.PaymentMethods.FindAsync(id);
             if (paymentMethod == null)
             {
                 return NotFound();
             }
-            //validation section3
-            if(paymentMethod.Expenses.Count>0||
-                paymentMethod.ExportPayments.Count>0||
-                paymentMethod.ImportPayments.Count>0||
-                paymentMethod.PurchaseBills.Count>0||
-                paymentMethod.PurchaseReturnsBills.Count>0||
-                paymentMethod.SaleBills.Count>0||
+            if (paymentMethod.Expenses.Count>0 || 
+                paymentMethod.ExportPayments.Count>0 ||
+                paymentMethod.ImportPayments.Count>0 ||
+                paymentMethod.PurchaseBills.Count>0 ||
+                paymentMethod.PurchaseReturnsBills.Count >0 ||
+                paymentMethod.SaleBills.Count>0 ||
                 paymentMethod.SalesReturnsBills.Count>0)
-            { return BadRequest(); }
+            {
+                return BadRequest();
+            }
 
             _context.PaymentMethods.Remove(paymentMethod);
             await _context.SaveChangesAsync();
@@ -119,18 +114,34 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.PaymentMethods.Any(e => e.Id == id);
         }
+
         public bool IsPaymentMethodDataNotValid(PaymentMethod paymentMethod)
         {
-            bool Name = _context.PaymentMethods.Any((p) => p.Name == paymentMethod.Name && p.Id != paymentMethod.Id);
-            bool TypeValid = (paymentMethod.Type == "Bank" || paymentMethod.Type == "MoneySafe");
-            if (
-                paymentMethod.Balance == 0||
-                paymentMethod.Name ==null||
-                paymentMethod.Type == null||
-                !TypeValid||
-                Name
+            //--Validation 
+            /*
+                  ID INT IDENTITY(1,1),
+                  Balance FLOAT,
+                  [Name] VARCHAR(50) NOT NULL UNIQUE,
+                  [Type] VARCHAR(10) NOT NULL, --TODO Check in(Bank ,MoneySafe)
+                  Constraint PaymentMethodPK PRIMARY KEY (ID),
+                  Constraint TypeCheck Check ([Type] in ('Bank','MoneySafe') )
+             */
 
+            //foreign keys can not refer to Not Existed
+            bool TypeCheckExisted = _context.PaymentMethods.Any(p => (p.Type == "Bank")||p.Type== "MoneySafe");
 
+            // UNIQUE Prorerty must to be Not Existed before                                               
+            bool IDExisted = _context.PaymentMethods.Any((p) => p.Id == paymentMethod.Id && p.Id != paymentMethod.Id);
+            bool NameExisted = _context.PaymentMethods.Any((p) => p.Name == paymentMethod.Name && p.Name != paymentMethod.Name);
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
+                paymentMethod.Id <= 0 ||
+                paymentMethod.Name == null ||
+                paymentMethod.Type == null || //again because it have both not null and unique 
+                IDExisted ||//check null values but for numeric types
+                NameExisted || // send bad request-NotValid- when foreign key Not Existed 
+                !TypeCheckExisted 
                 )
             {
                 return true;
@@ -139,6 +150,9 @@ namespace LogeenStockManagement.Controllers
             {
                 return false;
             }
+
+
+
         }
     }
 }

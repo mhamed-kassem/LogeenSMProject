@@ -46,7 +46,7 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutJob(int id, Job job)
         {
-            if (id != job.Id)
+            if (id != job.Id || IsjobDataNotValid(job))
             {
                 return BadRequest();
             }
@@ -77,6 +77,7 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<Job>> PostJob(Job job)
         {
+            if (IsjobDataNotValid(job)) { return BadRequest(); }
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
 
@@ -92,7 +93,8 @@ namespace LogeenStockManagement.Controllers
             {
                 return NotFound();
             }
-
+            //validation section3
+            if (job.Employees.Count > 0 ) { return BadRequest(); }
             _context.Jobs.Remove(job);
             await _context.SaveChangesAsync();
 
@@ -102,6 +104,39 @@ namespace LogeenStockManagement.Controllers
         private bool JobExists(int id)
         {
             return _context.Jobs.Any(e => e.Id == id);
+        }
+
+        public bool IsjobDataNotValid(Job job)
+        {
+            //--Validation 
+            /*
+              ID INT IDENTITY(1,1),
+              JobTitle VARCHAR(50) NOT NULL UNIQUE,
+              JobDescription VARCHAR(200),
+              Constraint JobPK PRIMARY KEY (ID)
+             */
+
+            // UNIQUE Prorerty must to be Not Existed before                                               
+            bool IDExisted = _context.Jobs.Any((j) => j.Id == job.Id && j.Id != job.Id);
+            bool JobTitleExisted = _context.Jobs.Any((j) => j.JobTitle == job.JobTitle && j.JobTitle != job.JobTitle);
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
+                job.Id <= 0 ||
+                job.JobTitle == null ||
+                IDExisted || //again because it have both not null and unique 
+                JobTitleExisted//check null values but for numeric types
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+
+
         }
     }
 }

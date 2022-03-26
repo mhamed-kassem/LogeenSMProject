@@ -46,7 +46,7 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutExportPayment(int id, ExportPayment exportPayment)
         {
-            if (id != exportPayment.Id)
+            if (id != exportPayment.Id || IsExportPaymentDataNotValid(exportPayment))
             {
                 return BadRequest();
             }
@@ -77,6 +77,11 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<ExportPayment>> PostExportPayment(ExportPayment exportPayment)
         {
+            if (IsExportPaymentDataNotValid(exportPayment))
+            {
+                return BadRequest();
+            }
+            
             _context.ExportPayments.Add(exportPayment);
             await _context.SaveChangesAsync();
 
@@ -102,6 +107,57 @@ namespace LogeenStockManagement.Controllers
         private bool ExportPaymentExists(int id)
         {
             return _context.ExportPayments.Any(e => e.Id == id);
+        }
+
+        public bool IsExportPaymentDataNotValid(ExportPayment exportPayment)
+        {
+            //--Validation 
+            /*
+              ID INT IDENTITY(1,1),
+              [Date] DATE NOT NULL Default GETDATE(),
+              PayedBalance FLOAT NOT NULL,
+              CheckNumber VARCHAR(50) NOT NULL,
+              PurchaseBillId int NOT NULL,
+              SupplierId int not null,
+              PayMethodId int not null,
+              CONSTRAINT OutPayPK PRIMARY KEY (ID),
+              CONSTRAINT OutPayPurchaseBillFK FOREIGN KEY (PurchaseBillId) REFERENCES PurchaseBill(ID),
+              CONSTRAINT OutPaySupplierFK FOREIGN KEY (SupplierId) REFERENCES Supplier(ID),
+              CONSTRAINT OutPayMethodFK FOREIGN KEY (PayMethodId) REFERENCES PaymentMethod(ID)
+             */
+
+            //foreign keys can not refer to Not Existed
+            bool PurchaseBillIdExisted = _context.PurchaseBills.Any(p => p.Id == exportPayment.PurchaseBillId);
+            bool SupplierIdExisted = _context.Suppliers.Any(s => s.Id == exportPayment.SupplierId);
+            bool PayMethodIdExisted = _context.PaymentMethods.Any(p => p.Id == exportPayment.PayMethodId);
+
+            // UNIQUE Prorerty must to be Not Existed before                                               
+            bool IDExisted = _context.ExportPayments.Any((e) => e.Id == exportPayment.Id && e.Id != exportPayment.Id);
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
+                exportPayment.Id <=0 ||
+               //exportPayment.Date == null ||
+                exportPayment.PayedBalance <=0|| //again because it have both not null and unique 
+                exportPayment.CheckNumber==null ||//check null values but for numeric types
+                exportPayment.PurchaseBillId<=0 || // send bad request-NotValid- when foreign key Not Existed 
+                exportPayment.SupplierId<=0 ||
+                exportPayment.PayMethodId<=0 || //send bad request-NotValid- when unique is Existed before
+                !PurchaseBillIdExisted||
+                !SupplierIdExisted||
+                !PayMethodIdExisted||
+                IDExisted
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+
+
         }
     }
 }

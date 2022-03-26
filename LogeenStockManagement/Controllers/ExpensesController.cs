@@ -42,6 +42,7 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/Expenses/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutExpense(int id, Expense expense)
         {
@@ -72,6 +73,7 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/Expenses
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Expense>> PostExpense(Expense expense)
         {
@@ -114,7 +116,7 @@ namespace LogeenStockManagement.Controllers
             //--Validation 
             /*
               ID INT IDENTITY(1,1),
-              [Date] DATE NOT NULL Default GETDATE(),
+              [Date] DATE NOT NULL Default GETDATE(), --TODO default today
               Notes VARCHAR(200),
               [Value] FLOAT NOT NULL,
               CheckNumber VARCHAR(50) NOT NULL,
@@ -135,10 +137,22 @@ namespace LogeenStockManagement.Controllers
             bool ExpenseTypeExisted= _context.ExpenseTypes.Any(e => e.Id == expense.TypeId);
             bool PaymentMethodExisted = _context.PaymentMethods.Any(p => p.Id == expense.PayMethodId);
 
-            //Not NUll properties + chech Foreign result
-            if (expense.Value == 0 || expense.CheckNumber == null ||
-                !StockExisted || !EmployeeExisted || !ExpenseTypeExisted || !PaymentMethodExisted ||
-                !DateTime.TryParse(expense.Date.ToString(), out _)
+
+            // UNIQUE Prorerty must to be Not Existed before                                               
+            bool IDExisted = _context.Expenses.Any((e) => e.Id == expense.Id && e.Id != expense.Id);
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
+                expense.Id == 0 ||
+                //expense.Date==0||
+                expense.Value == 0 ||
+                expense.CheckNumber == null || //again because it have both not null and unique 
+                IDExisted ||//check null values but for numeric types
+                !StockExisted || // send bad request-NotValid- when foreign key Not Existed 
+                !EmployeeExisted ||
+                !ExpenseTypeExisted || //send bad request-NotValid- when unique is Existed before
+                !PaymentMethodExisted ||
+                IDExisted
                 )
             {
                 return true;
@@ -148,9 +162,8 @@ namespace LogeenStockManagement.Controllers
                 return false;
             }
 
+
+
         }
-
-
-
     }
 }

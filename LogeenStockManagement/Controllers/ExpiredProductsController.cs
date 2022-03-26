@@ -46,7 +46,7 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutExpiredProduct(int id, ExpiredProduct expiredProduct)
         {
-            if (id != expiredProduct.Id)
+            if (id != expiredProduct.Id || IsExpiredProductDataNotValid(expiredProduct))
             {
                 return BadRequest();
             }
@@ -77,6 +77,11 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<ExpiredProduct>> PostExpiredProduct(ExpiredProduct expiredProduct)
         {
+           if (IsExpiredProductDataNotValid(expiredProduct))
+            {
+                return BadRequest();
+            }
+            
             _context.ExpiredProducts.Add(expiredProduct);
             await _context.SaveChangesAsync();
 
@@ -93,6 +98,8 @@ namespace LogeenStockManagement.Controllers
                 return NotFound();
             }
 
+            
+
             _context.ExpiredProducts.Remove(expiredProduct);
             await _context.SaveChangesAsync();
 
@@ -102,6 +109,44 @@ namespace LogeenStockManagement.Controllers
         private bool ExpiredProductExists(int id)
         {
             return _context.ExpiredProducts.Any(e => e.Id == id);
+        }
+
+        public bool IsExpiredProductDataNotValid(ExpiredProduct expiredProduct)
+        {
+            //--Validation 
+            /*
+              ID INT IDENTITY(1,1),
+              Amount INT NOT NULL,
+              DateAdded DATE Default GETDATE(),
+              Notes VARCHAR(200),
+              ProductId INT NOT NULL,
+              CONSTRAINT ExpiredProductPK PRIMARY KEY (ID),
+              CONSTRAINT ExpiredProductTypeFK FOREIGN KEY (ProductId) REFERENCES Product(ID)
+             */
+
+            //foreign keys can not refer to Not Existed
+            bool ProductIdExisted = _context.Products.Any(p => p.Id == expiredProduct.ProductId);
+
+            // UNIQUE Prorerty must to be Not Existed before                                               
+            bool IDExisted = _context.ExpiredProducts.Any((e) => e.Id == expiredProduct.Id && e.Id != expiredProduct.Id);
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
+                expiredProduct.Amount <= 0 ||
+                expiredProduct.ProductId <=0 ||
+                !ProductIdExisted || //again because it have both not null and unique 
+                IDExisted
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+
+
         }
     }
 }
