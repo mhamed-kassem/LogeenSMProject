@@ -73,6 +73,7 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/DiscountForClients
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<DiscountForClient>> PostDiscountForClient(DiscountForClient discountForClient)
         {
@@ -80,7 +81,6 @@ namespace LogeenStockManagement.Controllers
             {
                 return BadRequest();
             }
-
             _context.DiscountForClients.Add(discountForClient);
             await _context.SaveChangesAsync();
 
@@ -92,13 +92,11 @@ namespace LogeenStockManagement.Controllers
         public async Task<IActionResult> DeleteDiscountForClient(int id)
         {
             var discountForClient = await _context.DiscountForClients.FindAsync(id);
-
             if (discountForClient == null)
             {
                 return NotFound();
             }
-            
-            //validation section3
+
 
             _context.DiscountForClients.Remove(discountForClient);
             await _context.SaveChangesAsync();
@@ -114,19 +112,24 @@ namespace LogeenStockManagement.Controllers
         public bool IsDiscountForClientsNotValid(DiscountForClient discountForClient)
         {
             //--Validation 
-            /*ID INT IDENTITY(1, 1),
-            DiscountValue FLOAT NOT NULL,
-            Notes VARCHAR(200),
-            StartDate DATE NOT NULL,
-            EndDate DATE NOT NULL,
-            Constraint DiscountPK PRIMARY KEY(ID)
-            */
+              /*ID INT IDENTITY(1, 1),
+              DiscountValue FLOAT NOT NULL,
+              Notes VARCHAR(200),
+              StartDate DATE NOT NULL,
+              EndDate DATE NOT NULL,
+              Constraint DiscountPK PRIMARY KEY(ID)
+              */
+            // UNIQUE Prorerty must to be Not Existed before                                               
+            bool IdExisted = _context.DiscountForClients.Any((d) => d.Id == discountForClient.Id && d.Id != discountForClient.Id);
 
             //Not NUll properties + chech Foreign and Uniqe result
-            if (discountForClient.DiscountValue == 0 || discountForClient.Notes == null ||
-                !DateTime.TryParse(discountForClient.StartDate.ToString(), out _) ||
-                !DateTime.TryParse(discountForClient.EndDate.ToString(), out _) ||
-                discountForClient.StartDate > discountForClient.EndDate
+
+            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
+                discountForClient.Id==0||
+                //discountForClient.DiscountValue==0||
+                double.IsNaN(discountForClient.DiscountValue) ||
+                IdExisted||
+                
                 )
             {
                 return true;
