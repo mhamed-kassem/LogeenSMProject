@@ -46,7 +46,9 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProductTransfered(int id, ProductTransfered productTransfered)
         {
-            if (id != productTransfered.Id)
+            //validation section1
+
+            if (id != productTransfered.Id || IsProductTransferedDataNotValid(productTransfered))
             {
                 return BadRequest();
             }
@@ -77,6 +79,12 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<ProductTransfered>> PostProductTransfered(ProductTransfered productTransfered)
         {
+            //validation section2
+            if (IsProductTransferedDataNotValid (productTransfered))
+            {
+                return BadRequest();
+
+            }
             _context.ProductTransfereds.Add(productTransfered);
             await _context.SaveChangesAsync();
 
@@ -103,5 +111,29 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.ProductTransfereds.Any(e => e.Id == id);
         }
+        public bool IsProductTransferedDataNotValid(ProductTransfered productTransfered)
+        {
+            bool ProductExisted = _context.ProductTransfereds.Any(ww => ww.Id == productTransfered.ProductId);
+            bool TransferOperationExisted = _context.TransferOperations.Any(ww => ww.Id == productTransfered.TransferOperationId);
+            
+
+            if (
+                productTransfered.Amount==0||
+                !DateTime.TryParse(productTransfered.ProductionDate.ToString(), out _) ||
+                productTransfered.ProductId==0||
+                productTransfered.TransferOperationId==0 ||
+                !ProductExisted||
+                !TransferOperationExisted
+
+                )
+                {
+                return true;    
+                }
+            else
+            {
+                return false;
+            }
+        }
+        
     }
 }

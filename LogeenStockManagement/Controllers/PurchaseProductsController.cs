@@ -46,7 +46,9 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPurchaseProduct(int id, PurchaseProduct purchaseProduct)
         {
-            if (id != purchaseProduct.Id)
+            //validation section1
+
+            if (id != purchaseProduct.Id || IsPurchaseProductDataNotValid(purchaseProduct))
             {
                 return BadRequest();
             }
@@ -77,6 +79,13 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<PurchaseProduct>> PostPurchaseProduct(PurchaseProduct purchaseProduct)
         {
+            //validation section2
+            if (IsPurchaseProductDataNotValid(purchaseProduct))
+            {
+                return BadRequest();
+
+            }
+
             _context.PurchaseProducts.Add(purchaseProduct);
             await _context.SaveChangesAsync();
 
@@ -102,6 +111,29 @@ namespace LogeenStockManagement.Controllers
         private bool PurchaseProductExists(int id)
         {
             return _context.PurchaseProducts.Any(e => e.Id == id);
+        }
+        public bool IsPurchaseProductDataNotValid(PurchaseProduct purchaseProduct)
+        {
+            //foreignkey
+            bool PurchaseProductTypeExisted = _context.PurchaseProducts.Any(p => p.Id == purchaseProduct.ProductId);
+            bool PurchaseProductBillExisted = _context.PurchaseProducts.Any(p => p.Id == purchaseProduct.PurchaseBillId);
+            if (
+                purchaseProduct.Amount==0||
+                purchaseProduct.Discount==0||
+                purchaseProduct.TotalPrice==0||
+                purchaseProduct.ProductId==0 ||
+                purchaseProduct.PurchaseBillId==0 ||
+                !PurchaseProductTypeExisted||
+                !PurchaseProductBillExisted
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
     }
 }

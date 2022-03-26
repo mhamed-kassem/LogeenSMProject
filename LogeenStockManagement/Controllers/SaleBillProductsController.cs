@@ -46,7 +46,8 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSaleBillProduct(int id, SaleBillProduct saleBillProduct)
         {
-            if (id != saleBillProduct.Id)
+            //validation section1
+            if (id != saleBillProduct.Id || IsSaleBillProductDataNotValid(saleBillProduct))
             {
                 return BadRequest();
             }
@@ -77,6 +78,11 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<SaleBillProduct>> PostSaleBillProduct(SaleBillProduct saleBillProduct)
         {
+            //validation section2
+            if (IsSaleBillProductDataNotValid(saleBillProduct))
+            {
+                return BadRequest();
+            }
             _context.SaleBillProducts.Add(saleBillProduct);
             await _context.SaveChangesAsync();
 
@@ -102,6 +108,29 @@ namespace LogeenStockManagement.Controllers
         private bool SaleBillProductExists(int id)
         {
             return _context.SaleBillProducts.Any(e => e.Id == id);
+        }
+        public bool IsSaleBillProductDataNotValid(SaleBillProduct saleBillProduct)
+        {
+            //foreinkey
+            bool SaleBillProductBillExisted = _context.SaleBillProducts.Any(s => s.Id == saleBillProduct.SaleBillId);
+            bool  SaleProductTypeExisted = _context.SaleBillProducts.Any(s => s.Id == saleBillProduct.ProductId);
+            if (
+                saleBillProduct.AmountToSell==0||
+                saleBillProduct.Discount==0||
+                saleBillProduct.TotalPrice==0||
+                saleBillProduct.SaleBillId==0 ||
+                saleBillProduct.ProductId==0 ||
+                !SaleBillProductBillExisted||
+                !SaleProductTypeExisted
+
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

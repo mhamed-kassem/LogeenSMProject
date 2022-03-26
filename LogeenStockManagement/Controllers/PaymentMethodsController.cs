@@ -46,7 +46,8 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPaymentMethod(int id, PaymentMethod paymentMethod)
         {
-            if (id != paymentMethod.Id)
+            //validation section1
+            if (id != paymentMethod.Id ||IsPaymentMethodDataNotValid(paymentMethod))
             {
                 return BadRequest();
             }
@@ -77,6 +78,11 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<PaymentMethod>> PostPaymentMethod(PaymentMethod paymentMethod)
         {
+            //validation section2
+            if (IsPaymentMethodDataNotValid(paymentMethod))
+            {
+                return BadRequest();
+            }
             _context.PaymentMethods.Add(paymentMethod);
             await _context.SaveChangesAsync();
 
@@ -87,11 +93,21 @@ namespace LogeenStockManagement.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePaymentMethod(int id)
         {
+
             var paymentMethod = await _context.PaymentMethods.FindAsync(id);
             if (paymentMethod == null)
             {
                 return NotFound();
             }
+            //validation section3
+            if(paymentMethod.Expenses.Count>0||
+                paymentMethod.ExportPayments.Count>0||
+                paymentMethod.ImportPayments.Count>0||
+                paymentMethod.PurchaseBills.Count>0||
+                paymentMethod.PurchaseReturnsBills.Count>0||
+                paymentMethod.SaleBills.Count>0||
+                paymentMethod.SalesReturnsBills.Count>0)
+            { return BadRequest(); }
 
             _context.PaymentMethods.Remove(paymentMethod);
             await _context.SaveChangesAsync();
@@ -102,6 +118,27 @@ namespace LogeenStockManagement.Controllers
         private bool PaymentMethodExists(int id)
         {
             return _context.PaymentMethods.Any(e => e.Id == id);
+        }
+        public bool IsPaymentMethodDataNotValid(PaymentMethod paymentMethod)
+        {
+            bool Name = _context.PaymentMethods.Any((p) => p.Name == paymentMethod.Name && p.Id != paymentMethod.Id);
+            bool TypeValid = (paymentMethod.Type == "Bank" || paymentMethod.Type == "MoneySafe");
+            if (
+                paymentMethod.Balance == 0||
+                paymentMethod.Name ==null||
+                paymentMethod.Type == null||
+                !TypeValid||
+                Name
+
+
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

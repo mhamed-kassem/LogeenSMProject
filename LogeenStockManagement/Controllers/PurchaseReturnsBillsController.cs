@@ -46,7 +46,8 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPurchaseReturnsBill(int id, PurchaseReturnsBill purchaseReturnsBill)
         {
-            if (id != purchaseReturnsBill.Id)
+            //validation section1
+            if (id != purchaseReturnsBill.Id || IsPurchaseReturnsBillDataNotValid(purchaseReturnsBill))
             {
                 return BadRequest();
             }
@@ -77,6 +78,12 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<PurchaseReturnsBill>> PostPurchaseReturnsBill(PurchaseReturnsBill purchaseReturnsBill)
         {
+            //validation section2
+            if (IsPurchaseReturnsBillDataNotValid(purchaseReturnsBill))
+            {
+                return BadRequest();
+
+            }
             _context.PurchaseReturnsBills.Add(purchaseReturnsBill);
             await _context.SaveChangesAsync();
 
@@ -103,5 +110,35 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.PurchaseReturnsBills.Any(e => e.Id == id);
         }
+        public bool IsPurchaseReturnsBillDataNotValid(PurchaseReturnsBill purchaseReturnsBill)
+        {
+            //foreinkey
+            bool PurchaseReturnPurchaseBillExisted = _context.PurchaseReturnsBills.Any(p => p.Id == purchaseReturnsBill.PurchaseBillId);
+            bool PurchaseReturnTaxExisted = _context.PurchaseReturnsBills.Any(p => p.Id == purchaseReturnsBill.TaxId);
+            bool  PurchaseReturnPayMethodExisted = _context.PurchaseReturnsBills.Any(p => p.Id == purchaseReturnsBill.PayMethodId);
+            //uniqe
+            bool CodeExisted = _context.PurchaseReturnsBills.Any((p) => p.Code == purchaseReturnsBill.Code && p.Id != purchaseReturnsBill.Id);
+            if (
+                purchaseReturnsBill.Code==null||
+               !DateTime.TryParse(purchaseReturnsBill.Date.ToString(), out _) ||
+                purchaseReturnsBill.NetMoney==0||
+                purchaseReturnsBill.Discount==0 ||
+                purchaseReturnsBill.PurchaseBillId==0 ||
+                purchaseReturnsBill.TaxId==0 ||
+                purchaseReturnsBill.PayMethodId==0||
+                !PurchaseReturnPurchaseBillExisted||
+               ! PurchaseReturnTaxExisted||
+                !PurchaseReturnPayMethodExisted||
+                CodeExisted
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
+ 
