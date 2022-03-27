@@ -42,11 +42,10 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/Taxes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTax(int id, Tax tax)
         {
-            if (id != tax.Id)
+            if (id != tax.Id||IsTaxDataNotValid(tax))
             {
                 return BadRequest();
             }
@@ -73,10 +72,14 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/Taxes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Tax>> PostTax(Tax tax)
         {
+            if (IsTaxDataNotValid(tax))
+            {
+                return BadRequest();
+            }
+
             _context.Taxes.Add(tax);
             await _context.SaveChangesAsync();
 
@@ -92,6 +95,11 @@ namespace LogeenStockManagement.Controllers
             {
                 return NotFound();
             }
+            if(tax.PurchaseBills.Count>0||tax.PurchaseReturnsBills.Count>0||
+                tax.SaleBills.Count > 0 || tax.SalesReturnsBills.Count > 0)
+            {
+                return BadRequest();
+            }
 
             _context.Taxes.Remove(tax);
             await _context.SaveChangesAsync();
@@ -103,5 +111,34 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.Taxes.Any(e => e.Id == id);
         }
+
+        public bool IsTaxDataNotValid(Tax tax)
+        {
+            //--Validation 
+            /*
+            ID INT IDENTITY(1,1),
+            [Name] VARCHAR(50) NOT NULL UNIQUE,
+            [Percentage] INT NOT NULL,
+            [Description] VARCHAR(200) NOT NULL,
+            Constraint TaxPK PRIMARY KEY (ID)
+            */
+
+            // UNIQUE Prorerty must to be Not Existed before
+            bool NameRepeat = _context.Taxes.Any(t => t.Name == tax.Name && t.Id != tax.Id);
+
+            //Not NUll properties + chech Foreign and Uniqe results
+            if (tax.Name == null || tax.Percentage <= 0 || tax.Description == null ||
+                NameRepeat)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
     }
 }

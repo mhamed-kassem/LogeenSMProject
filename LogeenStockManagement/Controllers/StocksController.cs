@@ -42,11 +42,10 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/Stocks/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStock(int id, Stock stock)
         {
-            if (id != stock.Id)
+            if (id != stock.Id||IsStockDataNotValid(stock))
             {
                 return BadRequest();
             }
@@ -73,10 +72,14 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/Stocks
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Stock>> PostStock(Stock stock)
         {
+            if (IsStockDataNotValid(stock))
+            {
+                return BadRequest();
+            }
+
             _context.Stocks.Add(stock);
             await _context.SaveChangesAsync();
 
@@ -93,6 +96,14 @@ namespace LogeenStockManagement.Controllers
                 return NotFound();
             }
 
+            if (stock.Employees.Count > 0 || stock.Expenses.Count > 0 ||
+                stock.PurchaseBills.Count > 0 || stock.SaleBills.Count > 0 ||
+                stock.StockProducts.Count > 0 ||
+                stock.TransferOperationFromStocks.Count > 0 || stock.TransferOperationToStocks.Count > 0)
+            {
+                return BadRequest();
+            }
+
             _context.Stocks.Remove(stock);
             await _context.SaveChangesAsync();
 
@@ -103,5 +114,33 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.Stocks.Any(e => e.Id == id);
         }
+
+        public bool IsStockDataNotValid(Stock stock)
+        {
+            /*
+             * ID INT IDENTITY(1,1),
+	        [Name] VARCHAR(50) NOT NULL UNIQUE,
+	        [Address] VARCHAR(200) NOT NULL UNIQUE,
+	        Constraint StockPK PRIMARY KEY (ID)           
+             */
+
+            // UNIQUE Prorerty must to be Not Existed before
+            bool NameRepeat = _context.Stocks.Any((s) => s.Name == stock.Name && s.Id != s.Id);
+            bool AddressRepeat = _context.Stocks.Any((s) => s.Address == stock.Address && s.Id != s.Id);
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if (stock.Name == null || stock.Address == null ||
+                NameRepeat || AddressRepeat)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
     }
 }

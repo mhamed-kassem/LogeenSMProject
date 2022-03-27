@@ -42,11 +42,10 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/TraderTypes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTraderType(int id, TraderType traderType)
         {
-            if (id != traderType.Id)
+            if (id != traderType.Id||IsTraderTypeDataNotValid(traderType))
             {
                 return BadRequest();
             }
@@ -73,10 +72,14 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/TraderTypes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<TraderType>> PostTraderType(TraderType traderType)
         {
+            if (IsTraderTypeDataNotValid(traderType))
+            {
+                return BadRequest();
+            }
+
             _context.TraderTypes.Add(traderType);
             await _context.SaveChangesAsync();
 
@@ -93,6 +96,11 @@ namespace LogeenStockManagement.Controllers
                 return NotFound();
             }
 
+            if (traderType.Clients.Count > 0 || traderType.Suppliers.Count > 0)
+            {
+                return BadRequest();
+            }
+
             _context.TraderTypes.Remove(traderType);
             await _context.SaveChangesAsync();
 
@@ -103,5 +111,33 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.TraderTypes.Any(e => e.Id == id);
         }
+
+        public bool IsTraderTypeDataNotValid(TraderType type)
+        {
+            //--Validation 
+            /*
+              ID INT IDENTITY(1,1),
+              TypeName VARCHAR(50) NOT NULL UNIQUE,
+              [Description] VARCHAR(200),
+              Constraint TraderTypePK PRIMARY KEY (ID)
+             */
+
+            // UNIQUE Prorerty must to be Not Existed before
+            bool TypeNameRepeat = _context.TraderTypes.Any((tt) => tt.TypeName == type.TypeName && tt.Id != type.Id);
+
+            //Not NUll properties + chech Uniqe result
+            if (type.TypeName == null || TypeNameRepeat)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
+
     }
 }

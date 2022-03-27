@@ -42,11 +42,10 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/Suppliers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSupplier(int id, Supplier supplier)
         {
-            if (id != supplier.Id)
+            if (id != supplier.Id||IsSupplierDataNotValid(supplier))
             {
                 return BadRequest();
             }
@@ -73,10 +72,14 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/Suppliers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Supplier>> PostSupplier(Supplier supplier)
         {
+            if (IsSupplierDataNotValid(supplier))
+            {
+                return BadRequest();
+            }
+
             _context.Suppliers.Add(supplier);
             await _context.SaveChangesAsync();
 
@@ -93,6 +96,11 @@ namespace LogeenStockManagement.Controllers
                 return NotFound();
             }
 
+            if (supplier.BalanceDebit > 0 || supplier.ExportPayments.Count > 0 || supplier.PurchaseBills.Count > 0)
+            {
+                return BadRequest();
+            }
+
             _context.Suppliers.Remove(supplier);
             await _context.SaveChangesAsync();
 
@@ -103,5 +111,41 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.Suppliers.Any(e => e.Id == id);
         }
+
+        public bool IsSupplierDataNotValid(Supplier supplier)
+        {
+            //--Validation 
+            /*
+            ID INT IDENTITY(1,1),
+            [Name] VARCHAR(50) NOT NULL UNIQUE,
+            Phone NUMERIC(20) NOT NULL UNIQUE,
+            [Address] VARCHAR(100) NOT NULL,
+            BalanceDebit FLOAT,
+            TypeId INT NOT NULL,
+            CONSTRAINT SupplierPK PRIMARY KEY (ID),
+            CONSTRAINT SupplierTypeFK FOREIGN KEY (TypeId) REFERENCES TraderType(ID)
+            */
+
+            //foreign keys can not refer to Not Existed
+            bool TypeIdExisted = _context.TraderTypes.Any(t => t.Id == supplier.TypeId);
+
+            // UNIQUE Prorerty must to be Not Existed before
+            bool NameRepeat= _context.Suppliers.Any(s => s.Name == supplier.Name && s.Id != supplier.Id);
+            bool PhoneRepeat = _context.Suppliers.Any(s => s.Phone == supplier.Phone && s.Id != supplier.Id);
+
+            //Not NUll properties + chech Foreign and Uniqe results
+            if (supplier.Name == null || supplier.Phone == 0 ||supplier.Address==null||
+                PhoneRepeat || NameRepeat || !TypeIdExisted)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
     }
 }

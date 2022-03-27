@@ -42,11 +42,10 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/TransferOperations/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTransferOperation(int id, TransferOperation transferOperation)
         {
-            if (id != transferOperation.Id)
+            if (id != transferOperation.Id||IsTransferOP_DataNotValid(transferOperation))
             {
                 return BadRequest();
             }
@@ -73,10 +72,14 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/TransferOperations
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<TransferOperation>> PostTransferOperation(TransferOperation transferOperation)
         {
+            if (IsTransferOP_DataNotValid(transferOperation))
+            {
+                return BadRequest();
+            }
+
             _context.TransferOperations.Add(transferOperation);
             await _context.SaveChangesAsync();
 
@@ -92,7 +95,8 @@ namespace LogeenStockManagement.Controllers
             {
                 return NotFound();
             }
-
+            if(transferOperation.ProductTransfereds.Count > 0){ return BadRequest(); }
+            
             _context.TransferOperations.Remove(transferOperation);
             await _context.SaveChangesAsync();
 
@@ -103,5 +107,41 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.TransferOperations.Any(e => e.Id == id);
         }
+
+        public bool IsTransferOP_DataNotValid(TransferOperation operation)
+        {
+            //--Validation 
+            /*
+            ID INT IDENTITY(1,1),
+            [Date] DATE NOT NULL  Default GETDATE(), --TODO  defalt value today
+            Notes VARCHAR(200),
+            EmployeeId int not null,
+            FromStockId INT NOT NULL,
+            ToStockId INT NOT NULL,
+            Constraint TransferPK PRIMARY KEY (ID),
+            Constraint TransferEmployeeFK FOREIGN KEY (EmployeeId) REFERENCES Employee(ID), 
+            Constraint TransferFromStockFK FOREIGN KEY (FromStockId) REFERENCES Stock(ID),
+            Constraint TransferToStockFK FOREIGN KEY (ToStockId) REFERENCES Stock(ID) 
+            */
+
+            //foreign keys can not refer to Not Existed
+            bool EmployeeExisted = _context.Employees.Any(e => e.Id == operation.EmployeeId);
+            bool FromStockExisted = _context.Stocks.Any(s => s.Id == operation.FromStockId);
+            bool ToStockExisted = _context.Stocks.Any(s => s.Id == operation.ToStockId);
+
+            //Not NUll properties + chech Foreign and Uniqe results
+            if (DateTime.TryParse(operation.Date.ToString(),out _)||
+                !EmployeeExisted||!FromStockExisted||!ToStockExisted)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
     }
 }

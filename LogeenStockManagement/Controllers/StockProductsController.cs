@@ -42,11 +42,10 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/StockProducts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStockProduct(int id, StockProduct stockProduct)
         {
-            if (id != stockProduct.Id)
+            if (id != stockProduct.Id|| IsStockProductDataNotValid(stockProduct))
             {
                 return BadRequest();
             }
@@ -73,10 +72,13 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/StockProducts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<StockProduct>> PostStockProduct(StockProduct stockProduct)
         {
+            if (IsStockProductDataNotValid(stockProduct))
+            {
+                return BadRequest();
+            }
             _context.StockProducts.Add(stockProduct);
             await _context.SaveChangesAsync();
 
@@ -92,7 +94,7 @@ namespace LogeenStockManagement.Controllers
             {
                 return NotFound();
             }
-
+            
             _context.StockProducts.Remove(stockProduct);
             await _context.SaveChangesAsync();
 
@@ -103,5 +105,34 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.StockProducts.Any(e => e.Id == id);
         }
+
+        public bool IsStockProductDataNotValid(StockProduct stockProduct)
+        {
+            //foreinkey
+            bool StockExisted = _context.Stocks.Any(s => s.Id == stockProduct.StockId);
+            bool ProductExisted = _context.Taxes.Any(p => p.Id == stockProduct.ProductId);
+            
+            //uniqe
+            bool StockProductRepeat = _context.StockProducts.Any((sp) => sp.StockId == stockProduct.StockId
+                && sp.ProductId == stockProduct.ProductId
+                &&sp.ProductionDate== stockProduct.ProductionDate
+                &&sp.Id!= stockProduct.Id);
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if (!DateTime.TryParse(stockProduct.ProductionDate.ToString(), out _)||
+                !StockExisted||!ProductExisted||
+                StockProductRepeat
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
     }
 }

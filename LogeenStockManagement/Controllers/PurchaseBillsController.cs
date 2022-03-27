@@ -134,7 +134,8 @@ namespace LogeenStockManagement.Controllers
             if (
                 purchaseBill.BillCode == null || purchaseBill.CheckNumber == null || purchaseBill.BillTotal == 0 ||
                 !StockExisted || !taxExisted || !PayMethodExisted || !SupplierExisted ||
-                !BillTypevalid || BillCodeRepeat
+                !BillTypevalid || BillCodeRepeat||
+                !DateTime.TryParse(purchaseBill.Date.ToString(),out _)
                 )
             {
                 return true;

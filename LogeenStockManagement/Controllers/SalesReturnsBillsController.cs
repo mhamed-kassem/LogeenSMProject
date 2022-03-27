@@ -46,7 +46,7 @@ namespace LogeenStockManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSalesReturnsBill(int id, SalesReturnsBill salesReturnsBill)
         {
-            if (id != salesReturnsBill.Id)
+            if (id != salesReturnsBill.Id|| IsSaleReturnBillDataNotValid(salesReturnsBill))
             {
                 return BadRequest();
             }
@@ -77,6 +77,11 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<SalesReturnsBill>> PostSalesReturnsBill(SalesReturnsBill salesReturnsBill)
         {
+            if (IsSaleReturnBillDataNotValid(salesReturnsBill))
+            {
+                return BadRequest();
+            }
+
             _context.SalesReturnsBills.Add(salesReturnsBill);
             await _context.SaveChangesAsync();
 
@@ -103,5 +108,40 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.SalesReturnsBills.Any(e => e.Id == id);
         }
+
+        private bool PurchaseReturnsBillExists(int id)
+        {
+            return _context.PurchaseReturnsBills.Any(e => e.Id == id);
+        }
+
+        public bool IsSaleReturnBillDataNotValid(SalesReturnsBill SaleReturnBill)
+        {
+            //foreinkey
+            bool SaleBillExisted = _context.SaleBills.Any(p => p.Id == SaleReturnBill.SaleBillId);
+            bool TaxExisted = _context.Taxes.Any(p => p.Id == SaleReturnBill.TaxId);
+            bool PayMethodExisted = _context.PaymentMethods.Any(p => p.Id == SaleReturnBill.PayMethodId);
+
+            //uniqe
+            bool CodeRepeat = _context.SalesReturnsBills.Any((p) => p.Code == SaleReturnBill.Code && p.Id != SaleReturnBill.Id);
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if (
+                SaleReturnBill.Code == null ||SaleReturnBill.NetMoney <= 0 ||
+                !SaleBillExisted || !TaxExisted || !PayMethodExisted ||
+                CodeRepeat ||!DateTime.TryParse(SaleReturnBill.Date.ToString(), out _)
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
+
+
     }
 }
