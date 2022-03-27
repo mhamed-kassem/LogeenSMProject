@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/ExpiredProducts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutExpiredProduct(int id, ExpiredProduct expiredProduct)
         {
@@ -73,7 +72,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/ExpiredProducts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<ExpiredProduct>> PostExpiredProduct(ExpiredProduct expiredProduct)
         {
@@ -97,9 +95,7 @@ namespace LogeenStockManagement.Controllers
             {
                 return NotFound();
             }
-
             
-
             _context.ExpiredProducts.Remove(expiredProduct);
             await _context.SaveChangesAsync();
 
@@ -127,15 +123,9 @@ namespace LogeenStockManagement.Controllers
             //foreign keys can not refer to Not Existed
             bool ProductIdExisted = _context.Products.Any(p => p.Id == expiredProduct.ProductId);
 
-            // UNIQUE Prorerty must to be Not Existed before                                               
-            bool IDExisted = _context.ExpiredProducts.Any((e) => e.Id == expiredProduct.Id && e.Id != expiredProduct.Id);
-
             //Not NUll properties + chech Foreign and Uniqe result
-            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
-                expiredProduct.Amount <= 0 ||
-                expiredProduct.ProductId <=0 ||
-                !ProductIdExisted || //again because it have both not null and unique 
-                IDExisted
+            if (expiredProduct.Amount <= 0 || !ProductIdExisted ||
+                DateTime.TryParse(expiredProduct.DateAdded.ToString(), out _)
                 )
             {
                 return true;
@@ -145,8 +135,8 @@ namespace LogeenStockManagement.Controllers
                 return false;
             }
 
-
-
         }
+
+
     }
 }

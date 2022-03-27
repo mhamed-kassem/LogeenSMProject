@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/PurchaseBills/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPurchaseBill(int id, PurchaseBill purchaseBill)
         {
@@ -75,7 +74,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/PurchaseBills
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<PurchaseBill>> PostPurchaseBill(PurchaseBill purchaseBill)
         {
@@ -102,9 +100,9 @@ namespace LogeenStockManagement.Controllers
             }
             //validation section3
             if (
-                purchaseBill.ExportPayments.Count>0||
-                purchaseBill.PurchaseProducts.Count>0||
-                purchaseBill.PurchaseReturnsBills.Count>0 
+                purchaseBill.ExportPayments.Count > 0 ||
+                purchaseBill.PurchaseProducts.Count > 0 ||
+                purchaseBill.PurchaseReturnsBills.Count > 0
                 )
             {
                 return BadRequest();
@@ -120,38 +118,23 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.PurchaseBills.Any(e => e.Id == id);
         }
-        public bool IsPurchaseBillDataNotValid(PurchaseBill purchaseBills)
+        public bool IsPurchaseBillDataNotValid(PurchaseBill purchaseBill)
         {
-            bool StockExisted = _context.PurchaseBills.Any(p => p.Id == purchaseBills.StockId);
-            bool taxExisted = _context.PurchaseBills.Any(p => p.Id == purchaseBills.TaxId);
-            bool PayMethodExisted = _context.PurchaseBills.Any(p => p.Id == purchaseBills.PayMethodId);
-            bool SupplierExisted = _context.PurchaseBills.Any(p => p.Id == purchaseBills.SupplierId);
-            bool BillTypevalid = (purchaseBills.BillType == "Cash" || purchaseBills.BillType == "Debit");
+            //foreign keys can not refer to Not Existed
+            bool StockExisted = _context.Stocks.Any(s => s.Id == purchaseBill.StockId);
+            bool taxExisted = _context.Taxes.Any(t => t.Id == purchaseBill.TaxId);
+            bool PayMethodExisted = _context.PaymentMethods.Any(p => p.Id == purchaseBill.PayMethodId);
+            bool SupplierExisted = _context.Suppliers.Any(s => s.Id == purchaseBill.SupplierId);
 
-            //uniqe
-            bool BillCodeExisted = _context.PurchaseBills.Any((p) => p.BillCode == purchaseBills.BillCode && p.Id != purchaseBills.Id);
+            // UNIQUE Prorerty must to be Not Existed before
+            bool BillCodeRepeat = _context.PurchaseBills.Any((b) => b.BillCode == purchaseBill.BillCode && b.Id != purchaseBill.Id);
+            bool BillTypevalid = purchaseBill.BillType == "Cash" || purchaseBill.BillType == "Debit";
+
+            //Not NUll properties + chech Foreign and Uniqe result
             if (
-                purchaseBills.BillCode == null ||
-                !DateTime.TryParse(purchaseBills.Date.ToString(), out _) ||
-                purchaseBills.BillType == null ||
-                purchaseBills.Discount == 0 ||
-                purchaseBills.Paidup == 0 ||
-                purchaseBills.CheckNumber == null ||
-                purchaseBills.BillTotal == 0 ||
-                purchaseBills.StockId == 0 ||
-                purchaseBills.TaxId == 0 ||
-                purchaseBills.PayMethodId == 0 ||
-                purchaseBills.SupplierId == 0 ||
-                !StockExisted||
-               ! taxExisted||
-               ! PayMethodExisted||
-               ! SupplierExisted||
-                !BillTypevalid||
-               BillCodeExisted
-
-
-
-
+                purchaseBill.BillCode == null || purchaseBill.CheckNumber == null || purchaseBill.BillTotal == 0 ||
+                !StockExisted || !taxExisted || !PayMethodExisted || !SupplierExisted ||
+                !BillTypevalid || BillCodeRepeat
                 )
             {
                 return true;
@@ -162,5 +145,9 @@ namespace LogeenStockManagement.Controllers
             }
 
         }
+
+
+
+
     }
 }

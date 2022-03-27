@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/ImportPayments/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutImportPayment(int id, ImportPayment importPayment)
         {
@@ -73,7 +72,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/ImportPayments
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<ImportPayment>> PostImportPayment(ImportPayment importPayment)
         {
@@ -131,22 +129,10 @@ namespace LogeenStockManagement.Controllers
             bool ClientIdExisted = _context.Clients.Any(c => c.Id == importPayment.ClientId);
             bool PayMethodIdExisted = _context.PaymentMethods.Any(p => p.Id == importPayment.PayMethodId);
 
-            // UNIQUE Prorerty must to be Not Existed before                                               
-            bool IDExisted = _context.ImportPayments.Any((i) => i.Id == importPayment.Id && i.Id != importPayment.Id);
-
-            //Not NUll properties + chech Foreign and Uniqe result
-            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
-                importPayment.Id <=0 ||
-                //importPayment.Date == null ||
-                importPayment.PayedBalance <=0 || //again because it have both not null and unique 
-                importPayment.CheckNumber == null ||//check null values but for numeric types
-                importPayment.SaleBillId<=0 || // send bad request-NotValid- when foreign key Not Existed 
-                importPayment.ClientId<=0||
-                importPayment.PayMethodId<=0 || //send bad request-NotValid- when unique is Existed before
-                IDExisted||
-                !SaleBillIdExisted||
-                !ClientIdExisted||
-                !PayMethodIdExisted
+            //Not NUll properties + chech Foreign result
+            if (importPayment.PayedBalance <= 0 || importPayment.CheckNumber == null ||
+                !SaleBillIdExisted || !ClientIdExisted || !PayMethodIdExisted ||
+                DateTime.TryParse(importPayment.Date.ToString(), out _)
                 )
             {
                 return true;
@@ -156,8 +142,8 @@ namespace LogeenStockManagement.Controllers
                 return false;
             }
 
-
-
         }
+
+
     }
 }

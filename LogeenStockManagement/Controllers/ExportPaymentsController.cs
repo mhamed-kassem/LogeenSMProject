@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/ExportPayments/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutExportPayment(int id, ExportPayment exportPayment)
         {
@@ -73,7 +72,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/ExportPayments
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<ExportPayment>> PostExportPayment(ExportPayment exportPayment)
         {
@@ -97,7 +95,7 @@ namespace LogeenStockManagement.Controllers
             {
                 return NotFound();
             }
-
+            
             _context.ExportPayments.Remove(exportPayment);
             await _context.SaveChangesAsync();
 
@@ -131,22 +129,10 @@ namespace LogeenStockManagement.Controllers
             bool SupplierIdExisted = _context.Suppliers.Any(s => s.Id == exportPayment.SupplierId);
             bool PayMethodIdExisted = _context.PaymentMethods.Any(p => p.Id == exportPayment.PayMethodId);
 
-            // UNIQUE Prorerty must to be Not Existed before                                               
-            bool IDExisted = _context.ExportPayments.Any((e) => e.Id == exportPayment.Id && e.Id != exportPayment.Id);
-
             //Not NUll properties + chech Foreign and Uniqe result
-            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
-                exportPayment.Id <=0 ||
-               //exportPayment.Date == null ||
-                exportPayment.PayedBalance <=0|| //again because it have both not null and unique 
-                exportPayment.CheckNumber==null ||//check null values but for numeric types
-                exportPayment.PurchaseBillId<=0 || // send bad request-NotValid- when foreign key Not Existed 
-                exportPayment.SupplierId<=0 ||
-                exportPayment.PayMethodId<=0 || //send bad request-NotValid- when unique is Existed before
-                !PurchaseBillIdExisted||
-                !SupplierIdExisted||
-                !PayMethodIdExisted||
-                IDExisted
+            if (exportPayment.PayedBalance <=0||exportPayment.CheckNumber==null||
+                !PurchaseBillIdExisted||!SupplierIdExisted||!PayMethodIdExisted||
+                DateTime.TryParse(exportPayment.Date.ToString(),out _)
                 )
             {
                 return true;
@@ -156,8 +142,7 @@ namespace LogeenStockManagement.Controllers
                 return false;
             }
 
-
-
         }
+
     }
 }

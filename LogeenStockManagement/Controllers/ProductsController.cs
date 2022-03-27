@@ -42,11 +42,10 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/Products/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProduct(int id, Product product)
         {
-            if (id != product.Id)
+            if (id != product.Id|| IsProductDataNotValid(product))
             {
                 return BadRequest();
             }
@@ -73,10 +72,14 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/Products
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
+            if (IsProductDataNotValid(product))
+            {
+                return BadRequest();
+            }
+
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
@@ -93,6 +96,16 @@ namespace LogeenStockManagement.Controllers
                 return NotFound();
             }
 
+            if(product.ExpiredProducts.Count>0||
+                product.ProductTransfereds.Count>0||
+                product.PurchaseProducts.Count>0||
+                product.SaleBillProducts.Count>0||
+                product.StockProducts.Count>0
+                )
+            {
+                return BadRequest();
+            }
+
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
 
@@ -103,5 +116,49 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.Products.Any(e => e.Id == id);
         }
+
+        public bool IsProductDataNotValid(Product product)
+        {
+            //--Validation 
+            /*
+            ID INT IDENTITY(1,1),
+            [Name] VARCHAR(50) NOT NULL UNIQUE,
+            [Description] VARCHAR(200),
+            MiniAmount INT NOT NULL,
+            Barcode VARCHAR(100),
+            SellingPrice FLOAT NOT NULL,
+            PurchasingPrice FLOAT NOT NULL,
+            ExpiryPeriod INT NOT NULL,
+            CategoryId INT NOT NULL,
+            CONSTRAINT ProductPK PRIMARY KEY (ID),
+            CONSTRAINT ProductCategoryFK FOREIGN KEY (CategoryId) REFERENCES Category(ID)
+            --UNIQUE (Barcode) --TODO
+             */
+
+            //foreign keys can not refer to Not Existed
+            bool CategoryExisted = _context.Categories.Any(c => c.Id == product.CategoryId);
+            
+            // UNIQUE Prorerty must to be Not Existed before                                               
+            bool NameExisted = _context.Products.Any((p) => p.Name == product.Name && p.Id != product.Id);
+            bool BarcodeExisted= _context.Products.Any((p) => p.Barcode == product.Barcode && p.Id != product.Id);
+
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if (product.Name == null ||product.MiniAmount<=0||product.SellingPrice<=0||product.PurchasingPrice<=0||product.ExpiryPeriod<=0||
+                NameExisted||BarcodeExisted||
+                !CategoryExisted
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
+
     }
 }

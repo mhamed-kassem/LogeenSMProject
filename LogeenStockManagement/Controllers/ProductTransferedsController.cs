@@ -41,41 +41,40 @@ namespace LogeenStockManagement.Controllers
             return productTransfered;
         }
 
-        // PUT: api/ProductTransfereds/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutProductTransfered(int id, ProductTransfered productTransfered)
-        {
-            //validation section1
+        //// PUT: api/ProductTransfereds/5
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutProductTransfered(int id, ProductTransfered productTransfered)
+        //{
+        //    //validation section1
 
-            if (id != productTransfered.Id || IsProductTransferedDataNotValid(productTransfered))
-            {
-                return BadRequest();
-            }
+        //    if (id != productTransfered.Id || IsProductTransferedDataNotValid(productTransfered))
+        //    {
+        //        return BadRequest();
+        //    }
 
-            _context.Entry(productTransfered).State = EntityState.Modified;
+        //    _context.Entry(productTransfered).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductTransferedExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!ProductTransferedExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // POST: api/ProductTransfereds
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        
         [HttpPost]
         public async Task<ActionResult<ProductTransfered>> PostProductTransfered(ProductTransfered productTransfered)
         {
@@ -85,9 +84,52 @@ namespace LogeenStockManagement.Controllers
                 return BadRequest();
 
             }
-            _context.ProductTransfereds.Add(productTransfered);
-            await _context.SaveChangesAsync();
 
+
+            //TODO throw StockProduct Controller Actions
+            StockProduct UpadeStokeProduct = _context.StockProducts.
+                 Where(sp => sp.StockId == productTransfered.TransferOperation.FromStockId
+                 && sp.ProductId == productTransfered.ProductId
+                 && sp.ProductionDate == productTransfered.ProductionDate).FirstOrDefault();
+            
+            if (UpadeStokeProduct.Amount > productTransfered.Amount)
+            {
+                UpadeStokeProduct.Amount -= productTransfered.Amount;
+
+            }
+            else if (UpadeStokeProduct.Amount == productTransfered.Amount)
+            {
+                _context.StockProducts.Remove(UpadeStokeProduct);
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+            StockProduct newStockProduct;
+
+            if (StockProductExists(productTransfered.ProductId, productTransfered.TransferOperation.ToStockId, productTransfered.ProductionDate, out newStockProduct))
+            {
+                newStockProduct.Amount += productTransfered.Amount;
+            }
+            else
+            {
+                newStockProduct = new StockProduct
+                {
+                    ProductId = productTransfered.ProductId,
+                    StockId = productTransfered.TransferOperation.ToStockId,
+                    ProductionDate = productTransfered.ProductionDate,
+                    Amount = productTransfered.Amount
+                };
+
+                _context.StockProducts.Add(newStockProduct);
+            }
+            //TODO throw StockProduct Controller Actions
+            //
+            _context.ProductTransfereds.Add(productTransfered);
+            
+            await _context.SaveChangesAsync();
+            
             return CreatedAtAction("GetProductTransfered", new { id = productTransfered.Id }, productTransfered);
         }
 
@@ -96,6 +138,7 @@ namespace LogeenStockManagement.Controllers
         public async Task<IActionResult> DeleteProductTransfered(int id)
         {
             var productTransfered = await _context.ProductTransfereds.FindAsync(id);
+            
             if (productTransfered == null)
             {
                 return NotFound();
@@ -107,33 +150,103 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
-        private bool ProductTransferedExists(int id)
-        {
-            return _context.ProductTransfereds.Any(e => e.Id == id);
-        }
-        public bool IsProductTransferedDataNotValid(ProductTransfered productTransfered)
-        {
-            bool ProductExisted = _context.ProductTransfereds.Any(ww => ww.Id == productTransfered.ProductId);
-            bool TransferOperationExisted = _context.TransferOperations.Any(ww => ww.Id == productTransfered.TransferOperationId);
-            
+        //private bool ProductTransferedExists(int id)
+        //{
+        //    return _context.ProductTransfereds.Any(e => e.Id == id);
+        //}
 
-            if (
-                productTransfered.Amount==0||
-                !DateTime.TryParse(productTransfered.ProductionDate.ToString(), out _) ||
-                productTransfered.ProductId==0||
-                productTransfered.TransferOperationId==0 ||
-                !ProductExisted||
-                !TransferOperationExisted
+        private bool StockProductExists(int ProductId, int StockId, DateTime ProductionDate,out StockProduct stockProduct)
+        {
+            stockProduct = _context.StockProducts.
+                 Where(sp => sp.StockId == StockId
+                 && sp.ProductId == ProductId
+                 && sp.ProductionDate == ProductionDate).FirstOrDefault();
 
-                )
-                {
-                return true;    
-                }
-            else
+            if (stockProduct == null)
             {
                 return false;
             }
+            else
+            {
+                return true;
+            }
         }
         
-    }
+
+        public bool IsProductTransferedDataNotValid(ProductTransfered productTransfered)
+        {
+            /*
+             * ID INT IDENTITY(1,1),
+              Amount INT NOT NULL,
+              ProductionDate DATE NOT NULL, --logic bring it from store products table or manully
+              ProductId INT NOT NULL,
+              TransferOperationId INT NOT NULL,
+              CONSTRAINT ProductTransferedPK PRIMARY KEY (ID),
+              CONSTRAINT ProductTransferedTypeFK FOREIGN KEY (ProductId) REFERENCES Product(ID),
+              CONSTRAINT ProductTransferOPerationFK FOREIGN KEY (TransferOperationId) REFERENCES TransferOperation(ID)
+             */
+
+            //foreign keys can not refer to Not Existed
+            bool ProductExisted = _context.Products.Any(p => p.Id == productTransfered.ProductId);
+            bool TransferOperationExisted = _context.TransferOperations.Any(op => op.Id == productTransfered.TransferOperationId);
+
+            //Logic 10-valid date and exixted in the Form-store by the same production date
+            //5 valid date but not Existed in the From-store products 
+
+
+            if (
+                productTransfered.Amount <= 0 ||
+                !ProductExisted || !TransferOperationExisted ||
+                DateTime.TryParse(productTransfered.ProductionDate.ToString(), out _)
+                )
+            {
+                return true;
+            }
+            else if (!_context.StockProducts.Any(p =>
+                p.StockId == productTransfered.TransferOperation.FromStockId
+                && p.ProductId == productTransfered.ProductId
+                && p.ProductionDate == productTransfered.ProductionDate)
+                )
+            {
+                return true;
+            }
+
+            else if (productTransfered.Amount > GetStockProductAmount(productTransfered.ProductId, productTransfered.TransferOperation.FromStockId))
+            {
+                return true;
+            }else
+            {
+                return false;
+            }
+
+        }
+
+
+
+
+        /// <summary>
+        /// Move next Actions To StockProduct Controller
+        /// </summary>
+        /// <param name="ProductId"></param>
+        /// <param name="StockId"></param>
+        /// <returns></returns>
+        //[HttpGet("{ProductId,StockId}")]
+        public IEnumerable<DateTime> GetProductionDates(int ProductId,int StockId)
+        {
+            return _context.StockProducts.Where(sp=>sp.StockId==StockId&&sp.ProductId==ProductId).Select(sp=>sp.ProductionDate);
+        }
+
+        //[HttpGet("{StockId}")]
+        public IEnumerable<Product> GetStockProducts(int StockId)
+        {
+            return _context.Products.Where(p => _context.StockProducts.Any(sp => sp.StockId == StockId && sp.ProductId==p.Id)).ToList(); 
+        }
+
+        public int GetStockProductAmount(int ProductId, int StockId)
+        {
+            return _context.StockProducts.Where(sp => sp.StockId == StockId && sp.ProductId == ProductId).Select(sp=>sp.Amount).Sum();
+        }
+
+
+    }//Controller
 }

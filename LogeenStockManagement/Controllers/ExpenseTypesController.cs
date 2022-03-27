@@ -42,11 +42,10 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/ExpenseTypes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutExpenseType(int id, ExpenseType expenseType)
         {
-            if (id != expenseType.Id)
+            if (id != expenseType.Id|| IsExpenseTypeNotValid(expenseType))
             {
                 return BadRequest();
             }
@@ -73,10 +72,14 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/ExpenseTypes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<ExpenseType>> PostExpenseType(ExpenseType expenseType)
         {
+            if (IsExpenseTypeNotValid(expenseType))
+            {
+                return BadRequest();
+            }
+
             _context.ExpenseTypes.Add(expenseType);
             await _context.SaveChangesAsync();
 
@@ -93,6 +96,11 @@ namespace LogeenStockManagement.Controllers
                 return NotFound();
             }
 
+            if (expenseType.Expenses.Count > 0)
+            {
+                return BadRequest();
+            }
+
             _context.ExpenseTypes.Remove(expenseType);
             await _context.SaveChangesAsync();
 
@@ -103,5 +111,31 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.ExpenseTypes.Any(e => e.Id == id);
         }
+
+        public bool IsExpenseTypeNotValid(ExpenseType expenseType)
+        {
+            //--Validation 
+            /*
+            ID INT IDENTITY(1,1),
+            [Name] VARCHAR(50) NOT NULL,
+            Details VARCHAR(150) NOT NULL,
+            Constraint ExpenseTypePK PRIMARY KEY (ID)
+             */
+
+            //Not NUll properties + chech Foreign and Uniqe result
+            if (expenseType.Name == null || expenseType.Details == null||
+                _context.ExpenseTypes.Any((t) => t.Name == expenseType.Name && t.Id != expenseType.Id)
+                )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+
     }
 }

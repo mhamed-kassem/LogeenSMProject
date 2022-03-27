@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/SaleBillProducts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSaleBillProduct(int id, SaleBillProduct saleBillProduct)
         {
@@ -74,7 +73,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/SaleBillProducts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<SaleBillProduct>> PostSaleBillProduct(SaleBillProduct saleBillProduct)
         {
@@ -112,18 +110,15 @@ namespace LogeenStockManagement.Controllers
         public bool IsSaleBillProductDataNotValid(SaleBillProduct saleBillProduct)
         {
             //foreinkey
-            bool SaleBillProductBillExisted = _context.SaleBillProducts.Any(s => s.Id == saleBillProduct.SaleBillId);
-            bool  SaleProductTypeExisted = _context.SaleBillProducts.Any(s => s.Id == saleBillProduct.ProductId);
+            bool SaleBillExisted = _context.SaleBillProducts.Any(s => s.Id == saleBillProduct.SaleBillId);
+            bool ProductTypeExisted = _context.SaleBillProducts.Any(s => s.Id == saleBillProduct.ProductId);
+            
+            //Not NUll properties + chech Foreign and Uniqe result
             if (
                 saleBillProduct.AmountToSell==0||
-                saleBillProduct.Discount==0||
                 saleBillProduct.TotalPrice==0||
-                saleBillProduct.SaleBillId==0 ||
-                saleBillProduct.ProductId==0 ||
-                !SaleBillProductBillExisted||
-                !SaleProductTypeExisted
-
-                )
+                !SaleBillExisted||!ProductTypeExisted
+               )
             {
                 return true;
             }
@@ -132,5 +127,7 @@ namespace LogeenStockManagement.Controllers
                 return false;
             }
         }
+
+
     }
 }

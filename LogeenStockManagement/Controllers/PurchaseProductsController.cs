@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/PurchaseProducts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPurchaseProduct(int id, PurchaseProduct purchaseProduct)
         {
@@ -75,7 +74,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/PurchaseProducts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<PurchaseProduct>> PostPurchaseProduct(PurchaseProduct purchaseProduct)
         {
@@ -112,19 +110,17 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.PurchaseProducts.Any(e => e.Id == id);
         }
+
         public bool IsPurchaseProductDataNotValid(PurchaseProduct purchaseProduct)
         {
             //foreignkey
-            bool PurchaseProductTypeExisted = _context.PurchaseProducts.Any(p => p.Id == purchaseProduct.ProductId);
-            bool PurchaseProductBillExisted = _context.PurchaseProducts.Any(p => p.Id == purchaseProduct.PurchaseBillId);
+            bool PurchaseProductTypeExisted = _context.Products.Any(p => p.Id == purchaseProduct.ProductId);
+            bool PurchaseBillExisted = _context.PurchaseBills.Any(p => p.Id == purchaseProduct.PurchaseBillId);
+            
+            //Not NUll properties + chech Foreign and Uniqe result
             if (
-                purchaseProduct.Amount==0||
-                purchaseProduct.Discount==0||
-                purchaseProduct.TotalPrice==0||
-                purchaseProduct.ProductId==0 ||
-                purchaseProduct.PurchaseBillId==0 ||
-                !PurchaseProductTypeExisted||
-                !PurchaseProductBillExisted
+                purchaseProduct.Amount<=0||purchaseProduct.TotalPrice==0||
+                !PurchaseProductTypeExisted||!PurchaseBillExisted
                 )
             {
                 return true;
@@ -135,5 +131,7 @@ namespace LogeenStockManagement.Controllers
             }
 
         }
+
+
     }
 }

@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/Jobs/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutJob(int id, Job job)
         {
@@ -73,11 +72,14 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/Jobs
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Job>> PostJob(Job job)
         {
-            if (IsjobDataNotValid(job)) { return BadRequest(); }
+            if (IsjobDataNotValid(job)) 
+            { 
+                return BadRequest(); 
+            }
+
             _context.Jobs.Add(job);
             await _context.SaveChangesAsync();
 
@@ -89,12 +91,15 @@ namespace LogeenStockManagement.Controllers
         public async Task<IActionResult> DeleteJob(int id)
         {
             var job = await _context.Jobs.FindAsync(id);
+            
             if (job == null)
             {
                 return NotFound();
             }
+            
             //validation section3
             if (job.Employees.Count > 0 ) { return BadRequest(); }
+            
             _context.Jobs.Remove(job);
             await _context.SaveChangesAsync();
 
@@ -116,17 +121,11 @@ namespace LogeenStockManagement.Controllers
               Constraint JobPK PRIMARY KEY (ID)
              */
 
-            // UNIQUE Prorerty must to be Not Existed before                                               
-            bool IDExisted = _context.Jobs.Any((j) => j.Id == job.Id && j.Id != job.Id);
-            bool JobTitleExisted = _context.Jobs.Any((j) => j.JobTitle == job.JobTitle && j.JobTitle != job.JobTitle);
+            // UNIQUE Prorerty must to be Not Existed before
+            bool JobTitleExisted = _context.Jobs.Any((j) => j.JobTitle == job.JobTitle && j.Id != job.Id);
 
             //Not NUll properties + chech Foreign and Uniqe result
-            if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
-                job.Id <= 0 ||
-                job.JobTitle == null ||
-                IDExisted || //again because it have both not null and unique 
-                JobTitleExisted//check null values but for numeric types
-                )
+            if (job.JobTitle == null ||JobTitleExisted)
             {
                 return true;
             }
@@ -135,8 +134,7 @@ namespace LogeenStockManagement.Controllers
                 return false;
             }
 
-
-
         }
+
     }
 }

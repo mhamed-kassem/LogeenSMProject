@@ -42,7 +42,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // PUT: api/PurchaseReturnsBills/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPurchaseReturnsBill(int id, PurchaseReturnsBill purchaseReturnsBill)
         {
@@ -74,7 +73,6 @@ namespace LogeenStockManagement.Controllers
         }
 
         // POST: api/PurchaseReturnsBills
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<PurchaseReturnsBill>> PostPurchaseReturnsBill(PurchaseReturnsBill purchaseReturnsBill)
         {
@@ -110,26 +108,24 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.PurchaseReturnsBills.Any(e => e.Id == id);
         }
+
         public bool IsPurchaseReturnsBillDataNotValid(PurchaseReturnsBill purchaseReturnsBill)
         {
             //foreinkey
-            bool PurchaseReturnPurchaseBillExisted = _context.PurchaseReturnsBills.Any(p => p.Id == purchaseReturnsBill.PurchaseBillId);
-            bool PurchaseReturnTaxExisted = _context.PurchaseReturnsBills.Any(p => p.Id == purchaseReturnsBill.TaxId);
-            bool  PurchaseReturnPayMethodExisted = _context.PurchaseReturnsBills.Any(p => p.Id == purchaseReturnsBill.PayMethodId);
+            bool PurchaseBillExisted = _context.PurchaseBills.Any(p => p.Id == purchaseReturnsBill.PurchaseBillId);
+            bool TaxExisted = _context.Taxes.Any(p => p.Id == purchaseReturnsBill.TaxId);
+            bool PayMethodExisted = _context.PaymentMethods.Any(p => p.Id == purchaseReturnsBill.PayMethodId);
+            
             //uniqe
-            bool CodeExisted = _context.PurchaseReturnsBills.Any((p) => p.Code == purchaseReturnsBill.Code && p.Id != purchaseReturnsBill.Id);
+            bool CodeRepeat = _context.PurchaseReturnsBills.Any((p) => p.Code == purchaseReturnsBill.Code && p.Id != purchaseReturnsBill.Id);
+            
+            //Not NUll properties + chech Foreign and Uniqe result
             if (
                 purchaseReturnsBill.Code==null||
-               !DateTime.TryParse(purchaseReturnsBill.Date.ToString(), out _) ||
                 purchaseReturnsBill.NetMoney==0||
-                purchaseReturnsBill.Discount==0 ||
-                purchaseReturnsBill.PurchaseBillId==0 ||
-                purchaseReturnsBill.TaxId==0 ||
-                purchaseReturnsBill.PayMethodId==0||
-                !PurchaseReturnPurchaseBillExisted||
-               ! PurchaseReturnTaxExisted||
-                !PurchaseReturnPayMethodExisted||
-                CodeExisted
+                !PurchaseBillExisted||!TaxExisted||!PayMethodExisted||
+                CodeRepeat||
+                !DateTime.TryParse(purchaseReturnsBill.Date.ToString(), out _)
                 )
             {
                 return true;
