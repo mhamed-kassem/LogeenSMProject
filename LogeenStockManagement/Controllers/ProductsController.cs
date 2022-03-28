@@ -117,7 +117,7 @@ namespace LogeenStockManagement.Controllers
             return _context.Products.Any(e => e.Id == id);
         }
 
-        public bool IsProductDataNotValid(Product product)
+        protected bool IsProductDataNotValid(Product product)
         {
             //--Validation 
             /*

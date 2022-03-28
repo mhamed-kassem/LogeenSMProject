@@ -111,7 +111,7 @@ namespace LogeenStockManagement.Controllers
             return _context.Categories.Any(e => e.Id == id);
         }
 
-        public bool IsCategoryDataNotValid(Category category)
+        protected bool IsCategoryDataNotValid(Category category)
         {
             //--Validation 
             /*

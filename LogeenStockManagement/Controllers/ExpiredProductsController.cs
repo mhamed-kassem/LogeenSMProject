@@ -107,7 +107,7 @@ namespace LogeenStockManagement.Controllers
             return _context.ExpiredProducts.Any(e => e.Id == id);
         }
 
-        public bool IsExpiredProductDataNotValid(ExpiredProduct expiredProduct)
+        protected bool IsExpiredProductDataNotValid(ExpiredProduct expiredProduct)
         {
             //--Validation 
             /*

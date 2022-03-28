@@ -112,7 +112,7 @@ namespace LogeenStockManagement.Controllers
             return _context.ExpenseTypes.Any(e => e.Id == id);
         }
 
-        public bool IsExpenseTypeNotValid(ExpenseType expenseType)
+        protected bool IsExpenseTypeNotValid(ExpenseType expenseType)
         {
             //--Validation 
             /*

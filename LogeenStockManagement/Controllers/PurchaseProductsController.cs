@@ -111,7 +111,7 @@ namespace LogeenStockManagement.Controllers
             return _context.PurchaseProducts.Any(e => e.Id == id);
         }
 
-        public bool IsPurchaseProductDataNotValid(PurchaseProduct purchaseProduct)
+        protected bool IsPurchaseProductDataNotValid(PurchaseProduct purchaseProduct)
         {
             //foreignkey
             bool PurchaseProductTypeExisted = _context.Products.Any(p => p.Id == purchaseProduct.ProductId);

@@ -111,7 +111,7 @@ namespace LogeenStockManagement.Controllers
             return _context.Jobs.Any(e => e.Id == id);
         }
 
-        public bool IsjobDataNotValid(Job job)
+        protected bool IsjobDataNotValid(Job job)
         {
             //--Validation 
             /*

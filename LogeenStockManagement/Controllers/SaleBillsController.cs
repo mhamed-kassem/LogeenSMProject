@@ -116,7 +116,7 @@ namespace LogeenStockManagement.Controllers
             return _context.SaleBills.Any(e => e.Id == id);
         }
 
-        public bool IsSaleBillDataNotValid(SaleBill SaleBill)
+        protected bool IsSaleBillDataNotValid(SaleBill SaleBill)
         {
             /*
              * ID INT IDENTITY(1,1),

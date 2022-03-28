@@ -112,7 +112,7 @@ namespace LogeenStockManagement.Controllers
             return _context.Employees.Any(e => e.Id == id);
         }
 
-        public bool IsEmployeeDataNotValid(Employee employee)
+        protected bool IsEmployeeDataNotValid(Employee employee)
         {
             //--Validation 
             /*

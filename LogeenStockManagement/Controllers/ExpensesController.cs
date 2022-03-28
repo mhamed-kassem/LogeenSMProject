@@ -109,7 +109,7 @@ namespace LogeenStockManagement.Controllers
             return _context.Expenses.Any(e => e.Id == id);
         }
 
-        public bool IsExpenseDataNotValid(Expense expense)
+        protected bool IsExpenseDataNotValid(Expense expense)
         {
             //--Validation 
             /*

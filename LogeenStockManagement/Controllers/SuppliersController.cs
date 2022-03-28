@@ -112,7 +112,7 @@ namespace LogeenStockManagement.Controllers
             return _context.Suppliers.Any(e => e.Id == id);
         }
 
-        public bool IsSupplierDataNotValid(Supplier supplier)
+        protected bool IsSupplierDataNotValid(Supplier supplier)
         {
             //--Validation 
             /*

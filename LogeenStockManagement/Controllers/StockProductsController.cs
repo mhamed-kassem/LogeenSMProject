@@ -41,86 +41,89 @@ namespace LogeenStockManagement.Controllers
             return stockProduct;
         }
 
-        // PUT: api/StockProducts/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutStockProduct(int id, StockProduct stockProduct)
-        {
-            if (id != stockProduct.Id|| IsStockProductDataNotValid(stockProduct))
-            {
-                return BadRequest();
-            }
+        //
+        #region put, post, delete
+        //// PUT: api/StockProducts/5
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutStockProduct(int id, StockProduct stockProduct)
+        //{
+        //    if (id != stockProduct.Id|| IsStockProductDataNotValid(stockProduct))
+        //    {
+        //        return BadRequest();
+        //    }
 
-            _context.Entry(stockProduct).State = EntityState.Modified;
+        //    _context.Entry(stockProduct).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!StockProductExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!StockProductExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
-        // POST: api/StockProducts
-        [HttpPost]
-        public async Task<ActionResult<StockProduct>> PostStockProduct(StockProduct stockProduct)
-        {
-            if (IsStockProductDataNotValid(stockProduct))
-            {
-                return BadRequest();
-            }
-            _context.StockProducts.Add(stockProduct);
-            await _context.SaveChangesAsync();
+        //// POST: api/StockProducts
+        //[HttpPost]
+        //public async Task<ActionResult<StockProduct>> PostStockProduct(StockProduct stockProduct)
+        //{
+        //    if (IsStockProductDataNotValid(stockProduct))
+        //    {
+        //        return BadRequest();
+        //    }
+        //    _context.StockProducts.Add(stockProduct);
+        //    await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetStockProduct", new { id = stockProduct.Id }, stockProduct);
-        }
+        //    return CreatedAtAction("GetStockProduct", new { id = stockProduct.Id }, stockProduct);
+        //}
 
         // DELETE: api/StockProducts/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStockProduct(int id)
-        {
-            var stockProduct = await _context.StockProducts.FindAsync(id);
-            if (stockProduct == null)
-            {
-                return NotFound();
-            }
-            
-            _context.StockProducts.Remove(stockProduct);
-            await _context.SaveChangesAsync();
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteStockProduct(int id)
+        //{
+        //    var stockProduct = await _context.StockProducts.FindAsync(id);
+        //    if (stockProduct == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return NoContent();
-        }
+        //    _context.StockProducts.Remove(stockProduct);
+        //    await _context.SaveChangesAsync();
 
-        private bool StockProductExists(int id)
-        {
-            return _context.StockProducts.Any(e => e.Id == id);
-        }
+        //    return NoContent();
+        //}
 
-        public bool IsStockProductDataNotValid(StockProduct stockProduct)
+        //private bool StockProductExists(int id)
+        //{
+        //    return _context.StockProducts.Any(e => e.Id == id);
+        //}
+        #endregion
+        protected bool IsStockProductDataNotValid(StockProduct stockProduct)
         {
             //foreinkey
             bool StockExisted = _context.Stocks.Any(s => s.Id == stockProduct.StockId);
             bool ProductExisted = _context.Taxes.Any(p => p.Id == stockProduct.ProductId);
-            
+
             //uniqe
-            bool StockProductRepeat = _context.StockProducts.Any((sp) => sp.StockId == stockProduct.StockId
+            bool StockProductRepeat = _context.StockProducts.Any(
+                (sp) =>sp.StockId == stockProduct.StockId
                 && sp.ProductId == stockProduct.ProductId
-                &&sp.ProductionDate== stockProduct.ProductionDate
-                &&sp.Id!= stockProduct.Id);
+                && sp.ProductionDate == stockProduct.ProductionDate
+                && sp.Id != stockProduct.Id);
 
             //Not NUll properties + chech Foreign and Uniqe result
-            if (!DateTime.TryParse(stockProduct.ProductionDate.ToString(), out _)||
-                !StockExisted||!ProductExisted||
+            if (!DateTime.TryParse(stockProduct.ProductionDate.ToString(), out _) ||
+                !StockExisted || !ProductExisted ||
                 StockProductRepeat
                 )
             {
@@ -132,6 +135,8 @@ namespace LogeenStockManagement.Controllers
             }
 
         }
+
+
 
 
     }

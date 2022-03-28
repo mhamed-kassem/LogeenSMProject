@@ -109,7 +109,7 @@ namespace LogeenStockManagement.Controllers
             return _context.PurchaseReturnsBills.Any(e => e.Id == id);
         }
 
-        public bool IsPurchaseReturnsBillDataNotValid(PurchaseReturnsBill purchaseReturnsBill)
+        protected bool IsPurchaseReturnsBillDataNotValid(PurchaseReturnsBill purchaseReturnsBill)
         {
             //foreinkey
             bool PurchaseBillExisted = _context.PurchaseBills.Any(p => p.Id == purchaseReturnsBill.PurchaseBillId);

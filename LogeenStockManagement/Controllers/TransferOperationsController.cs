@@ -108,7 +108,7 @@ namespace LogeenStockManagement.Controllers
             return _context.TransferOperations.Any(e => e.Id == id);
         }
 
-        public bool IsTransferOP_DataNotValid(TransferOperation operation)
+        protected bool IsTransferOP_DataNotValid(TransferOperation operation)
         {
             //--Validation 
             /*

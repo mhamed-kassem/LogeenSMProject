@@ -112,7 +112,7 @@ namespace LogeenStockManagement.Controllers
             return _context.Taxes.Any(e => e.Id == id);
         }
 
-        public bool IsTaxDataNotValid(Tax tax)
+        protected bool IsTaxDataNotValid(Tax tax)
         {
             //--Validation 
             /*

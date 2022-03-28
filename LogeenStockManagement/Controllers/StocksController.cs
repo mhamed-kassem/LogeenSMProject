@@ -115,7 +115,7 @@ namespace LogeenStockManagement.Controllers
             return _context.Stocks.Any(e => e.Id == id);
         }
 
-        public bool IsStockDataNotValid(Stock stock)
+        protected bool IsStockDataNotValid(Stock stock)
         {
             /*
              * ID INT IDENTITY(1,1),

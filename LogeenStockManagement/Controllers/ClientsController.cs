@@ -112,7 +112,7 @@ namespace LogeenStockManagement.Controllers
             return _context.Clients.Any(e => e.Id == id);
         }
 
-        public bool IsClientDataNotValid(Client client)
+        protected bool IsClientDataNotValid(Client client)
         {
             //--Validation 
             /*

@@ -117,7 +117,7 @@ namespace LogeenStockManagement.Controllers
             return _context.PaymentMethods.Any(e => e.Id == id);
         }
 
-        public bool IsPaymentMethodDataNotValid(PaymentMethod paymentMethod)
+        protected bool IsPaymentMethodDataNotValid(PaymentMethod paymentMethod)
         {
             //--Validation 
             /*

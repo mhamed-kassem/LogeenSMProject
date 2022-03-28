@@ -112,7 +112,7 @@ namespace LogeenStockManagement.Controllers
             return _context.TraderTypes.Any(e => e.Id == id);
         }
 
-        public bool IsTraderTypeDataNotValid(TraderType type)
+        protected bool IsTraderTypeDataNotValid(TraderType type)
         {
             //--Validation 
             /*

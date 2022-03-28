@@ -107,7 +107,7 @@ namespace LogeenStockManagement.Controllers
             return _context.ExportPayments.Any(e => e.Id == id);
         }
 
-        public bool IsExportPaymentDataNotValid(ExportPayment exportPayment)
+        protected bool IsExportPaymentDataNotValid(ExportPayment exportPayment)
         {
             //--Validation 
             /*

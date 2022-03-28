@@ -107,7 +107,7 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.SaleBillProducts.Any(e => e.Id == id);
         }
-        public bool IsSaleBillProductDataNotValid(SaleBillProduct saleBillProduct)
+        protected bool IsSaleBillProductDataNotValid(SaleBillProduct saleBillProduct)
         {
             //foreinkey
             bool SaleBillExisted = _context.SaleBillProducts.Any(s => s.Id == saleBillProduct.SaleBillId);

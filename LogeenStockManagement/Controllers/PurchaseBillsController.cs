@@ -118,7 +118,7 @@ namespace LogeenStockManagement.Controllers
         {
             return _context.PurchaseBills.Any(e => e.Id == id);
         }
-        public bool IsPurchaseBillDataNotValid(PurchaseBill purchaseBill)
+        protected bool IsPurchaseBillDataNotValid(PurchaseBill purchaseBill)
         {
             //foreign keys can not refer to Not Existed
             bool StockExisted = _context.Stocks.Any(s => s.Id == purchaseBill.StockId);

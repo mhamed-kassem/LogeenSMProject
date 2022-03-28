@@ -39,7 +39,7 @@ namespace LogeenStockManagement.Models
         public virtual Tax Tax { get; set; }
         [JsonIgnore]
         public virtual ICollection<ImportPayment> ImportPayments { get; set; }
-        [JsonIgnore]
+        
         public virtual ICollection<SaleBillProduct> SaleBillProducts { get; set; }
         [JsonIgnore]
         public virtual ICollection<SalesReturnsBill> SalesReturnsBills { get; set; }

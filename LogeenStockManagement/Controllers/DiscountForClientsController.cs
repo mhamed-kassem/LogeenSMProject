@@ -107,7 +107,7 @@ namespace LogeenStockManagement.Controllers
             return _context.DiscountForClients.Any(e => e.Id == id);
         }
 
-        public bool IsDiscountForClientsNotValid(DiscountForClient discountForClient)
+        protected bool IsDiscountForClientsNotValid(DiscountForClient discountForClient)
         {
             //--Validation 
               /*ID INT IDENTITY(1, 1),
