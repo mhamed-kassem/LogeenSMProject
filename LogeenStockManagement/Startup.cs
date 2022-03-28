@@ -47,15 +47,15 @@ namespace LogeenStockManagement
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
             //cors
             app.UseCors(options =>
             options.AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader());
-
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
 
             app.UseAuthorization();
 
