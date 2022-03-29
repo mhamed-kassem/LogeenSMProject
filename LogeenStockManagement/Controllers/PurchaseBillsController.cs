@@ -83,7 +83,48 @@ namespace LogeenStockManagement.Controllers
                 return BadRequest();
 
             }
+
+            
+
+            foreach(PurchaseProduct item in purchaseBill.PurchaseProducts)
+            {
+                item.TotalPrice = item.Amount * item.Product.PurchasingPrice - (double)item.Discount;
+                
+                purchaseBill.BillTotal += item.TotalPrice;
+                
+                //Add to Stock products table test?
+                StockProduct stockProduct;                                       /*item.ProductionDate*/
+                if (StockProductExists(item.ProductId,item.PurchaseBill.StockId, DateTime.Today ,out stockProduct))
+                {
+                    stockProduct.Amount += item.Amount;
+                }
+                else
+                {
+                    stockProduct = new StockProduct
+                     {
+                         ProductId = item.ProductId,
+                         StockId = item.PurchaseBill.StockId,
+                         Amount = item.Amount,
+                         ProductionDate=DateTime.Today//ProductionDate 
+                     };
+                    _context.StockProducts.Add(stockProduct);
+                }
+                
+            }
+
+            purchaseBill.BillTotal -= purchaseBill.Discount;
+            purchaseBill.BillTotal += purchaseBill.BillTotal/100 * purchaseBill.Tax.Percentage;
+
+            purchaseBill.Remaining = purchaseBill.BillTotal - purchaseBill.Paidup;
+
+            purchaseBill.PayMethod.Balance -= purchaseBill.Paidup;
+
+            purchaseBill.Supplier.BalanceDebit += purchaseBill.Remaining;
+
+            
+
             _context.PurchaseBills.Add(purchaseBill);
+            
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetPurchaseBill", new { id = purchaseBill.Id }, purchaseBill);
@@ -132,10 +173,12 @@ namespace LogeenStockManagement.Controllers
 
             //Not NUll properties + chech Foreign and Uniqe result
             if (
-                purchaseBill.BillCode == null || purchaseBill.CheckNumber == null || purchaseBill.BillTotal == 0 ||
-                !StockExisted || !taxExisted || !PayMethodExisted || !SupplierExisted ||
-                !BillTypevalid || BillCodeRepeat||
-                !DateTime.TryParse(purchaseBill.Date.ToString(),out _)
+                purchaseBill.BillCode == null || purchaseBill.CheckNumber == null
+                || !StockExisted || !taxExisted || !PayMethodExisted || !SupplierExisted
+                || !BillTypevalid || BillCodeRepeat
+                || !DateTime.TryParse(purchaseBill.Date.ToString(), out _)
+                || purchaseBill.PurchaseProducts.Count == 0 
+                || purchaseBill.BillTotal == 0
                 )
             {
                 return true;
@@ -147,7 +190,22 @@ namespace LogeenStockManagement.Controllers
 
         }
 
+        protected bool StockProductExists(int ProductId, int StockId, DateTime ProductionDate, out StockProduct stockProduct)
+        {
+            stockProduct = _context.StockProducts.
+                 Where(sp => sp.StockId == StockId
+                 && sp.ProductId == ProductId
+                 && sp.ProductionDate == ProductionDate).FirstOrDefault();
 
+            if (stockProduct == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
 
 
     }
