@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 #nullable disable
 
@@ -21,13 +20,9 @@ namespace LogeenStockManagement.Models
         public int Percentage { get; set; }
         public string Description { get; set; }
 
-        [JsonIgnore]
         public virtual ICollection<PurchaseBill> PurchaseBills { get; set; }
-        [JsonIgnore]
         public virtual ICollection<PurchaseReturnsBill> PurchaseReturnsBills { get; set; }
-        [JsonIgnore]
         public virtual ICollection<SaleBill> SaleBills { get; set; }
-        [JsonIgnore]
         public virtual ICollection<SalesReturnsBill> SalesReturnsBills { get; set; }
     }
 }

@@ -11,46 +11,46 @@ namespace LogeenStockManagement.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DiscountForClientsController : ControllerBase
+    public class DiscountsController : ControllerBase
     {
         private readonly LogeenStockManagementContext _context;
 
-        public DiscountForClientsController(LogeenStockManagementContext context)
+        public DiscountsController(LogeenStockManagementContext context)
         {
             _context = context;
         }
 
-        // GET: api/DiscountForClients
+        // GET: api/Discounts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DiscountForClient>>> GetDiscountForClients()
+        public async Task<ActionResult<IEnumerable<Discount>>> GetDiscounts()
         {
-            return await _context.DiscountForClients.ToListAsync();
+            return await _context.Discounts.ToListAsync();
         }
 
-        // GET: api/DiscountForClients/5
+        // GET: api/Discounts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<DiscountForClient>> GetDiscountForClient(int id)
+        public async Task<ActionResult<Discount>> GetDiscount(int id)
         {
-            var discountForClient = await _context.DiscountForClients.FindAsync(id);
+            var discount = await _context.Discounts.FindAsync(id);
 
-            if (discountForClient == null)
+            if (discount == null)
             {
                 return NotFound();
             }
 
-            return discountForClient;
+            return discount;
         }
 
-        // PUT: api/DiscountForClients/5
+        // PUT: api/Discounts/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDiscountForClient(int id, DiscountForClient discountForClient)
+        public async Task<IActionResult> PutDiscount(int id, Discount discount)
         {
-            if (id != discountForClient.Id || IsDiscountForClientsNotValid(discountForClient))
+            if (id != discount.Id || IsDiscountDataNotValid(discount))
             {
                 return BadRequest();
             }
 
-            _context.Entry(discountForClient).State = EntityState.Modified;
+            _context.Entry(discount).State = EntityState.Modified;
 
             try
             {
@@ -58,7 +58,7 @@ namespace LogeenStockManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!DiscountForClientExists(id))
+                if (!DiscountExists(id))
                 {
                     return NotFound();
                 }
@@ -71,43 +71,43 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
-        // POST: api/DiscountForClients
+        // POST: api/Discounts
         [HttpPost]
-        public async Task<ActionResult<DiscountForClient>> PostDiscountForClient(DiscountForClient discountForClient)
+        public async Task<ActionResult<Discount>> PostDiscount(Discount discount)
         {
-            if (IsDiscountForClientsNotValid(discountForClient))
+            if (IsDiscountDataNotValid(discount))
             {
                 return BadRequest();
             }
-            _context.DiscountForClients.Add(discountForClient);
+            _context.Discounts.Add(discount);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDiscountForClient", new { id = discountForClient.Id }, discountForClient);
+            return CreatedAtAction("GetDiscount", new { id = discount.Id }, discount);
         }
 
-        // DELETE: api/DiscountForClients/5
+        // DELETE: api/Discounts/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDiscountForClient(int id)
+        public async Task<IActionResult> DeleteDiscount(int id)
         {
-            var discountForClient = await _context.DiscountForClients.FindAsync(id);
+            var discount = await _context.Discounts.FindAsync(id);
             
-            if (discountForClient == null)
+            if (discount == null)
             {
                 return NotFound();
             }
 
-            _context.DiscountForClients.Remove(discountForClient);
+            _context.Discounts.Remove(discount);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool DiscountForClientExists(int id)
+        private bool DiscountExists(int id)
         {
-            return _context.DiscountForClients.Any(e => e.Id == id);
+            return _context.Discounts.Any(e => e.Id == id);
         }
 
-        protected bool IsDiscountForClientsNotValid(DiscountForClient discountForClient)
+        protected bool IsDiscountDataNotValid(Discount discount)
         {
             //--Validation 
               /*ID INT IDENTITY(1, 1),
@@ -119,10 +119,10 @@ namespace LogeenStockManagement.Controllers
               */
 
             //Not NUll properties + chech Foreign and Uniqe results
-            if(discountForClient.DiscountValue<=0||discountForClient.Notes==null||
-                !DateTime.TryParse(discountForClient.StartDate.ToString(),out _)||
-                !DateTime.TryParse(discountForClient.EndDate.ToString(),out _)||
-                discountForClient.StartDate>discountForClient.EndDate
+            if(discount.DiscountValue<=0||discount.Notes==null||
+                !DateTime.TryParse(discount.StartDate.ToString(),out _)||
+                !DateTime.TryParse(discount.EndDate.ToString(),out _)||
+                discount.StartDate>discount.EndDate
                 )
             {
                 //not valid

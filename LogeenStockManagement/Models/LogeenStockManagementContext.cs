@@ -19,7 +19,7 @@ namespace LogeenStockManagement.Models
 
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Client> Clients { get; set; }
-        public virtual DbSet<DiscountForClient> DiscountForClients { get; set; }
+        public virtual DbSet<Discount> Discounts { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<Expense> Expenses { get; set; }
         public virtual DbSet<ExpenseType> ExpenseTypes { get; set; }
@@ -33,6 +33,8 @@ namespace LogeenStockManagement.Models
         public virtual DbSet<PurchaseBill> PurchaseBills { get; set; }
         public virtual DbSet<PurchaseProduct> PurchaseProducts { get; set; }
         public virtual DbSet<PurchaseReturnsBill> PurchaseReturnsBills { get; set; }
+        public virtual DbSet<ReturnPurchaseProduct> ReturnPurchaseProducts { get; set; }
+        public virtual DbSet<ReturnSaleProduct> ReturnSaleProducts { get; set; }
         public virtual DbSet<SaleBill> SaleBills { get; set; }
         public virtual DbSet<SaleBillProduct> SaleBillProducts { get; set; }
         public virtual DbSet<SalesReturnsBill> SalesReturnsBills { get; set; }
@@ -54,49 +56,49 @@ namespace LogeenStockManagement.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
+
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.ToTable("Category");
 
-                entity.HasIndex(e => e.Name, "UQ__Category__737584F6F0171D11")
+                entity.HasIndex(e => e.Name, "UQ__Category__737584F6080FF870")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Description)
                     .IsRequired()
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                    .HasMaxLength(200);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
             });
 
             modelBuilder.Entity<Client>(entity =>
             {
                 entity.ToTable("Client");
 
-                entity.HasIndex(e => e.Phone, "UQ__Client__5C7E359EAD867081")
+                entity.HasIndex(e => e.Phone, "UQ__Client__5C7E359ECC686610")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.Address)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.Address).HasMaxLength(200);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Phone).HasColumnType("numeric(20, 0)");
 
-                entity.Property(e => e.TradeName)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                entity.Property(e => e.TradeName).HasMaxLength(100);
+
+                entity.HasOne(d => d.Discount)
+                    .WithMany(p => p.Clients)
+                    .HasForeignKey(d => d.DiscountId)
+                    .HasConstraintName("ClientDiscountFK");
 
                 entity.HasOne(d => d.Type)
                     .WithMany(p => p.Clients)
@@ -104,44 +106,43 @@ namespace LogeenStockManagement.Models
                     .HasConstraintName("ClientTypeFK");
             });
 
-            modelBuilder.Entity<DiscountForClient>(entity =>
+            modelBuilder.Entity<Discount>(entity =>
             {
-                entity.ToTable("DiscountForClient");
+                entity.ToTable("Discount");
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.EndDate).HasColumnType("date");
 
-                entity.Property(e => e.Notes)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.Notes).HasMaxLength(200);
 
                 entity.Property(e => e.StartDate).HasColumnType("date");
+
+                entity.Property(e => e.Title)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnName("title");
             });
 
             modelBuilder.Entity<Employee>(entity =>
             {
                 entity.ToTable("Employee");
 
-                entity.HasIndex(e => e.Phone, "UQ__Employee__5C7E359EA91876DA")
+                entity.HasIndex(e => e.Phone, "UQ__Employee__5C7E359E8C71BBFF")
                     .IsUnique();
 
-                entity.HasIndex(e => e.NationalId, "UQ__Employee__E9AA321A59B85CC1")
+                entity.HasIndex(e => e.NationalId, "UQ__Employee__E9AA321ADDC4258D")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.Address)
-                    .IsRequired()
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.Address).HasMaxLength(200);
 
                 entity.Property(e => e.HaveAccess).HasColumnName("Have_Access");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                    .HasMaxLength(100);
 
                 entity.Property(e => e.NationalId)
                     .HasColumnType("numeric(20, 0)")
@@ -149,9 +150,7 @@ namespace LogeenStockManagement.Models
 
                 entity.Property(e => e.Phone).HasColumnType("numeric(20, 0)");
 
-                entity.Property(e => e.Photo)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                entity.Property(e => e.Photo).HasMaxLength(100);
 
                 entity.HasOne(d => d.Job)
                     .WithMany(p => p.Employees)
@@ -174,16 +173,13 @@ namespace LogeenStockManagement.Models
 
                 entity.Property(e => e.CheckNumber)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Date)
                     .HasColumnType("date")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.Notes)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.Notes).HasMaxLength(200);
 
                 entity.HasOne(d => d.Employee)
                     .WithMany(p => p.Expenses)
@@ -193,19 +189,16 @@ namespace LogeenStockManagement.Models
                 entity.HasOne(d => d.PayMethod)
                     .WithMany(p => p.Expenses)
                     .HasForeignKey(d => d.PayMethodId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ExpensePayMethodFK");
 
                 entity.HasOne(d => d.Stock)
                     .WithMany(p => p.Expenses)
                     .HasForeignKey(d => d.StockId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ExpenseStockFK");
 
                 entity.HasOne(d => d.Type)
                     .WithMany(p => p.Expenses)
                     .HasForeignKey(d => d.TypeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ExpenseTypeFK");
             });
 
@@ -217,13 +210,11 @@ namespace LogeenStockManagement.Models
 
                 entity.Property(e => e.Details)
                     .IsRequired()
-                    .HasMaxLength(150)
-                    .IsUnicode(false);
+                    .HasMaxLength(150);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
             });
 
             modelBuilder.Entity<ExpiredProduct>(entity =>
@@ -236,14 +227,13 @@ namespace LogeenStockManagement.Models
                     .HasColumnType("date")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.Notes)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.Notes).HasMaxLength(200);
+
+                entity.Property(e => e.ProductionDate).HasColumnType("date");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.ExpiredProducts)
                     .HasForeignKey(d => d.ProductId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ExpiredProductTypeFK");
             });
 
@@ -289,8 +279,7 @@ namespace LogeenStockManagement.Models
 
                 entity.Property(e => e.CheckNumber)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Date)
                     .HasColumnType("date")
@@ -319,68 +308,66 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Job");
 
-                entity.HasIndex(e => e.JobTitle, "UQ__Job__44C68B9F7797CA43")
+                entity.HasIndex(e => e.JobTitle, "UQ__Job__44C68B9F7F6246B3")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.JobDescription)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.JobDescription).HasMaxLength(200);
 
                 entity.Property(e => e.JobTitle)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
             });
 
             modelBuilder.Entity<PaymentMethod>(entity =>
             {
                 entity.ToTable("PaymentMethod");
 
-                entity.HasIndex(e => e.Name, "UQ__PaymentM__737584F68060D9A9")
+                entity.HasIndex(e => e.Name, "UQ__PaymentM__737584F6D15096D9")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Type)
-                    .IsRequired()
                     .HasMaxLength(10)
-                    .IsUnicode(false);
+                    .HasDefaultValueSql("('MoneySafe')");
             });
 
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.ToTable("Product");
 
-                entity.HasIndex(e => e.Name, "UQ__Product__737584F6BC80717D")
+                entity.HasIndex(e => e.Barcode, "UQ__Product__177800D366E65269")
+                    .IsUnique();
+
+                entity.HasIndex(e => e.Name, "UQ__Product__737584F6B538FB8E")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.Barcode)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                entity.Property(e => e.Barcode).HasMaxLength(100);
 
-                entity.Property(e => e.Description)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.Description).HasMaxLength(200);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.Products)
                     .HasForeignKey(d => d.CategoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ProductCategoryFK");
+
+                entity.HasOne(d => d.Discount)
+                    .WithMany(p => p.Products)
+                    .HasForeignKey(d => d.DiscountId)
+                    .HasConstraintName("ProductDiscountFK");
             });
 
             modelBuilder.Entity<ProductTransfered>(entity =>
@@ -394,13 +381,11 @@ namespace LogeenStockManagement.Models
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.ProductTransfereds)
                     .HasForeignKey(d => d.ProductId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ProductTransferedTypeFK");
 
                 entity.HasOne(d => d.TransferOperation)
                     .WithMany(p => p.ProductTransfereds)
                     .HasForeignKey(d => d.TransferOperationId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ProductTransferOPerationFK");
             });
 
@@ -408,24 +393,20 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("PurchaseBill");
 
-                entity.HasIndex(e => e.BillCode, "UQ__Purchase__1CC9F83E29B160CD")
+                entity.HasIndex(e => e.BillCode, "UQ__Purchase__1CC9F83EA0F070C4")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.BillCode)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                entity.Property(e => e.BillCode).HasMaxLength(50);
 
                 entity.Property(e => e.BillType)
-                    .IsRequired()
                     .HasMaxLength(10)
-                    .IsUnicode(false);
+                    .HasDefaultValueSql("('Cash')");
 
                 entity.Property(e => e.CheckNumber)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Date)
                     .HasColumnType("date")
@@ -462,6 +443,10 @@ namespace LogeenStockManagement.Models
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
+                entity.Property(e => e.Price).HasColumnName("price");
+
+                entity.Property(e => e.ProductionDate).HasColumnType("date");
+
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.PurchaseProducts)
                     .HasForeignKey(d => d.ProductId)
@@ -479,14 +464,12 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("PurchaseReturnsBill");
 
-                entity.HasIndex(e => e.Code, "UQ__Purchase__A25C5AA7A7A73F46")
+                entity.HasIndex(e => e.Code, "UQ__Purchase__A25C5AA7BFF1D1B6")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.Code)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.Date)
                     .HasColumnType("date")
@@ -512,28 +495,60 @@ namespace LogeenStockManagement.Models
                     .HasConstraintName("PurchaseReturnTaxFK");
             });
 
+            modelBuilder.Entity<ReturnPurchaseProduct>(entity =>
+            {
+                entity.ToTable("ReturnPurchaseProduct");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.HasOne(d => d.PurchaseProduct)
+                    .WithMany(p => p.ReturnPurchaseProducts)
+                    .HasForeignKey(d => d.PurchaseProductId)
+                    .HasConstraintName("PurchaseProductToReturnFK");
+
+                entity.HasOne(d => d.ReturnPurchaseBill)
+                    .WithMany(p => p.ReturnPurchaseProducts)
+                    .HasForeignKey(d => d.ReturnPurchaseBillId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("ReturnPurchaseBillFK");
+            });
+
+            modelBuilder.Entity<ReturnSaleProduct>(entity =>
+            {
+                entity.ToTable("ReturnSaleProduct");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.HasOne(d => d.ReturnSaleBill)
+                    .WithMany(p => p.ReturnSaleProducts)
+                    .HasForeignKey(d => d.ReturnSaleBillId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("ReturnSaleBillFK");
+
+                entity.HasOne(d => d.SaleProduct)
+                    .WithMany(p => p.ReturnSaleProducts)
+                    .HasForeignKey(d => d.SaleProductId)
+                    .HasConstraintName("SaleProductFK");
+            });
+
             modelBuilder.Entity<SaleBill>(entity =>
             {
                 entity.ToTable("SaleBill");
 
-                entity.HasIndex(e => e.BillCode, "UQ__SaleBill__1CC9F83E88BECC50")
+                entity.HasIndex(e => e.BillCode, "UQ__SaleBill__1CC9F83E0ACB23B2")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.BillCode)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                entity.Property(e => e.BillCode).HasMaxLength(50);
 
                 entity.Property(e => e.BillType)
-                    .IsRequired()
                     .HasMaxLength(10)
-                    .IsUnicode(false);
+                    .HasDefaultValueSql("('Cash')");
 
                 entity.Property(e => e.CheckNumber)
                     .IsRequired()
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                    .HasMaxLength(100);
 
                 entity.Property(e => e.Date)
                     .HasColumnType("date")
@@ -570,6 +585,8 @@ namespace LogeenStockManagement.Models
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
+                entity.Property(e => e.ProductionDate).HasColumnType("date");
+
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.SaleBillProducts)
                     .HasForeignKey(d => d.ProductId)
@@ -587,14 +604,12 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("SalesReturnsBill");
 
-                entity.HasIndex(e => e.Code, "UQ__SalesRet__A25C5AA70B5443F8")
+                entity.HasIndex(e => e.Code, "UQ__SalesRet__A25C5AA71E2BDB20")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.Code)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.Date)
                     .HasColumnType("date")
@@ -622,28 +637,29 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Stock");
 
-                entity.HasIndex(e => e.Name, "UQ__Stock__737584F6F6B94B0F")
+                entity.HasIndex(e => e.Name, "UQ__Stock__737584F658277066")
                     .IsUnique();
 
-                entity.HasIndex(e => e.Address, "UQ__Stock__7D0C3F322F23BC8A")
+                entity.HasIndex(e => e.Address, "UQ__Stock__7D0C3F3299E766D4")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Address)
                     .IsRequired()
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                    .HasMaxLength(200);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
             });
 
             modelBuilder.Entity<StockProduct>(entity =>
             {
                 entity.ToTable("StockProduct");
+
+                entity.HasIndex(e => new { e.StockId, e.ProductId, e.ProductionDate }, "UniqueProduct")
+                    .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
@@ -652,13 +668,11 @@ namespace LogeenStockManagement.Models
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.StockProducts)
                     .HasForeignKey(d => d.ProductId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ProductTypeFK");
 
                 entity.HasOne(d => d.Stock)
                     .WithMany(p => p.StockProducts)
                     .HasForeignKey(d => d.StockId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("ProductStockFK");
             });
 
@@ -666,25 +680,23 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Supplier");
 
-                entity.HasIndex(e => e.Phone, "UQ__Supplier__5C7E359E6642A318")
+                entity.HasIndex(e => e.Phone, "UQ__Supplier__5C7E359EACB37D5D")
                     .IsUnique();
 
-                entity.HasIndex(e => e.Name, "UQ__Supplier__737584F61E5160D6")
+                entity.HasIndex(e => e.Name, "UQ__Supplier__737584F65B86B2E0")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Address)
                     .IsRequired()
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                    .HasMaxLength(100);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
 
-                entity.Property(e => e.Phone).HasColumnType("numeric(20, 0)");
+                entity.Property(e => e.Phone).HasMaxLength(20);
 
                 entity.HasOne(d => d.Type)
                     .WithMany(p => p.Suppliers)
@@ -697,39 +709,34 @@ namespace LogeenStockManagement.Models
             {
                 entity.ToTable("Tax");
 
-                entity.HasIndex(e => e.Name, "UQ__Tax__737584F6CA5B32B0")
+                entity.HasIndex(e => e.Name, "UQ__Tax__737584F6044960F3")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Description)
                     .IsRequired()
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                    .HasMaxLength(200);
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
             });
 
             modelBuilder.Entity<TraderType>(entity =>
             {
                 entity.ToTable("TraderType");
 
-                entity.HasIndex(e => e.TypeName, "UQ__TraderTy__D4E7DFA8A2818C9A")
+                entity.HasIndex(e => e.TypeName, "UQ__TraderTy__D4E7DFA8847B954C")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.Description)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.Description).HasMaxLength(200);
 
                 entity.Property(e => e.TypeName)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
             });
 
             modelBuilder.Entity<TransferOperation>(entity =>
@@ -742,9 +749,7 @@ namespace LogeenStockManagement.Models
                     .HasColumnType("date")
                     .HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.Notes)
-                    .HasMaxLength(200)
-                    .IsUnicode(false);
+                entity.Property(e => e.Notes).HasMaxLength(200);
 
                 entity.HasOne(d => d.Employee)
                     .WithMany(p => p.TransferOperations)

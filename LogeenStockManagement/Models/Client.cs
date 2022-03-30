@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 #nullable disable
 
@@ -21,12 +20,11 @@ namespace LogeenStockManagement.Models
         public string Address { get; set; }
         public string TradeName { get; set; }
         public int? TypeId { get; set; }
+        public int? DiscountId { get; set; }
 
-        [JsonIgnore]
+        public virtual Discount Discount { get; set; }
         public virtual TraderType Type { get; set; }
-        [JsonIgnore]
         public virtual ICollection<ImportPayment> ImportPayments { get; set; }
-        [JsonIgnore]
         public virtual ICollection<SaleBill> SaleBills { get; set; }
     }
 }

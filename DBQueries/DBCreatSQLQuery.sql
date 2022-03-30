@@ -1,4 +1,5 @@
-
+Drop Database LogeenStockManagement
+go
 use master
 go
 

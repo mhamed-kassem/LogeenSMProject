@@ -134,7 +134,7 @@ namespace LogeenStockManagement.Controllers
             bool PhoneRepeat = _context.Suppliers.Any(s => s.Phone == supplier.Phone && s.Id != supplier.Id);
 
             //Not NUll properties + chech Foreign and Uniqe results
-            if (supplier.Name == null || supplier.Phone == 0 ||supplier.Address==null||
+            if (supplier.Name == null || supplier.Phone == null ||supplier.Address==null||
                 PhoneRepeat || NameRepeat || !TypeIdExisted)
             {
                 return true;
