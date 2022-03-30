@@ -84,36 +84,47 @@ namespace LogeenStockManagement.Controllers
 
             }
 
-            
 
-            foreach(PurchaseProduct item in purchaseBill.PurchaseProducts)
+
+            foreach (PurchaseProduct item in purchaseBill.PurchaseProducts)
             {
+                DateTime ExpireDate = item.ProductionDate;
+                if (ExpireDate.AddMonths(item.Product.ExpiryPeriod) >= DateTime.Today)
+                {
+                    return BadRequest(new
+                    {
+                        ErrorStatus = "Expired Product",
+                        Data = item,
+                        Msg = item.Product.Name + " with Production date: " + item.ProductionDate + "  Expired."
+                    });
+                }
                 item.TotalPrice = item.Amount * item.Product.PurchasingPrice - (double)item.Discount;
-                
+
                 purchaseBill.BillTotal += item.TotalPrice;
-                
+
                 //Add to Stock products table test?
                 StockProduct stockProduct;                                       /*item.ProductionDate*/
-                if (StockProductExists(item.ProductId,item.PurchaseBill.StockId, DateTime.Today ,out stockProduct))
+                if (StockProductExists(item.ProductId, item.PurchaseBill.StockId, item.ProductionDate, out stockProduct))
                 {
                     stockProduct.Amount += item.Amount;
                 }
                 else
                 {
                     stockProduct = new StockProduct
-                     {
-                         ProductId = item.ProductId,
-                         StockId = item.PurchaseBill.StockId,
-                         Amount = item.Amount,
-                         ProductionDate=DateTime.Today//ProductionDate 
-                     };
+                    {
+                        ProductId = item.ProductId,
+                        StockId = item.PurchaseBill.StockId,
+                        Amount = item.Amount,
+                        ProductionDate = item.ProductionDate//ProductionDate 
+                    };
+
                     _context.StockProducts.Add(stockProduct);
                 }
-                
+
             }
 
             purchaseBill.BillTotal -= purchaseBill.Discount;
-            purchaseBill.BillTotal += purchaseBill.BillTotal/100 * purchaseBill.Tax.Percentage;
+            purchaseBill.BillTotal += purchaseBill.BillTotal / 100 * purchaseBill.Tax.Percentage;
 
             purchaseBill.Remaining = purchaseBill.BillTotal - purchaseBill.Paidup;
 
@@ -121,10 +132,10 @@ namespace LogeenStockManagement.Controllers
 
             purchaseBill.Supplier.BalanceDebit += purchaseBill.Remaining;
 
-            
+
 
             _context.PurchaseBills.Add(purchaseBill);
-            
+
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetPurchaseBill", new { id = purchaseBill.Id }, purchaseBill);
