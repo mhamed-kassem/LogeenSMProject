@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 #nullable disable
 
@@ -16,6 +17,7 @@ namespace LogeenStockManagement.Models
         public string JobTitle { get; set; }
         public string JobDescription { get; set; }
 
+        [JsonIgnore]
         public virtual ICollection<Employee> Employees { get; set; }
     }
 }

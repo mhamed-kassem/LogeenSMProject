@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 #nullable disable
 
@@ -15,8 +16,11 @@ namespace LogeenStockManagement.Models
         public int ClientId { get; set; }
         public int PayMethodId { get; set; }
 
+        [JsonIgnore]
         public virtual Client Client { get; set; }
+        [JsonIgnore]
         public virtual PaymentMethod PayMethod { get; set; }
+        [JsonIgnore]
         public virtual SaleBill SaleBill { get; set; }
     }
 }

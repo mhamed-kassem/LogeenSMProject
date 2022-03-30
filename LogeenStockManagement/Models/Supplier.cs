@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 #nullable disable
 
@@ -20,8 +21,11 @@ namespace LogeenStockManagement.Models
         public double? BalanceDebit { get; set; }
         public int TypeId { get; set; }
 
+        [JsonIgnore]
         public virtual TraderType Type { get; set; }
+        [JsonIgnore]
         public virtual ICollection<ExportPayment> ExportPayments { get; set; }
+        [JsonIgnore]
         public virtual ICollection<PurchaseBill> PurchaseBills { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 #nullable disable
 
@@ -17,9 +18,13 @@ namespace LogeenStockManagement.Models
         public int? TypeId { get; set; }
         public int? PayMethodId { get; set; }
 
+        [JsonIgnore]
         public virtual Employee Employee { get; set; }
+        [JsonIgnore]
         public virtual PaymentMethod PayMethod { get; set; }
+        [JsonIgnore]
         public virtual Stock Stock { get; set; }
+        [JsonIgnore]
         public virtual ExpenseType Type { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 #nullable disable
 
@@ -21,7 +22,9 @@ namespace LogeenStockManagement.Models
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
+        [JsonIgnore]
         public virtual ICollection<Client> Clients { get; set; }
+        [JsonIgnore]
         public virtual ICollection<Product> Products { get; set; }
     }
 }
