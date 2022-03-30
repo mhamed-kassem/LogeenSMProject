@@ -82,6 +82,8 @@ namespace LogeenStockManagement.Controllers
                 return BadRequest();
 
             }
+
+
             _context.PurchaseReturnsBills.Add(purchaseReturnsBill);
             await _context.SaveChangesAsync();
 
@@ -121,11 +123,10 @@ namespace LogeenStockManagement.Controllers
             
             //Not NUll properties + chech Foreign and Uniqe result
             if (
-                purchaseReturnsBill.Code==null||
-                purchaseReturnsBill.NetMoney==0||
-                !PurchaseBillExisted||!TaxExisted||!PayMethodExisted||
-                CodeRepeat||
-                !DateTime.TryParse(purchaseReturnsBill.Date.ToString(), out _)
+                purchaseReturnsBill.Code==null||purchaseReturnsBill.NetMoney==0
+                ||!PurchaseBillExisted||!TaxExisted||!PayMethodExisted||CodeRepeat
+                ||!DateTime.TryParse(purchaseReturnsBill.Date.ToString(), out _)
+                ||purchaseReturnsBill.ReturnPurchaseProducts.Count<=0
                 )
             {
                 return true;

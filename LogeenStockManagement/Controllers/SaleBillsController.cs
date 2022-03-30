@@ -80,10 +80,57 @@ namespace LogeenStockManagement.Controllers
                 return BadRequest();
             }
 
+
+            foreach (SaleBillProduct item in saleBill.SaleBillProducts)
+            {
+                item.Discount = item.Product.Discount.UnitCount <= item.AmountToSell && item.Product.Discount.EndDate > DateTime.Today ? item.Product.Discount.DiscountValue : 0;
+                item.TotalPrice = item.AmountToSell * item.Product.SellingPrice - (double)item.Discount;
+
+                saleBill.BillTotalPrice += item.TotalPrice;
+
+                //drop from Stock products table (test?)
+                StockProduct stockProduct;                                       /*item.ProductionDate*/
+                if (StockProductExists(item.ProductId, item.SaleBill.StockId, item.ProductionDate, out stockProduct))
+                {
+                    //stockProduct.Amount -= item.Amount;
+                    if (stockProduct.Amount > item.AmountToSell)
+                    {
+                        stockProduct.Amount -= item.AmountToSell;
+
+                    }
+                    else if (stockProduct.Amount == item.AmountToSell)
+                    {
+                        _context.StockProducts.Remove(stockProduct);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+            }
+
+            saleBill.Discount = saleBill.Client.Discount.EndDate > DateTime.Today ? saleBill.Client.Discount.DiscountValue : 0; 
+
+            saleBill.BillTotalPrice -= saleBill.Discount;
+            saleBill.BillTotalPrice += saleBill.BillTotalPrice / 100 * saleBill.Tax.Percentage;
+
+            saleBill.Remaining = saleBill.BillTotalPrice - saleBill.Paidup;
+
+            saleBill.PayMethod.Balance += saleBill.Paidup;
+
+            saleBill.Client.BalanceOutstand += saleBill.Remaining;
+
+
             _context.SaleBills.Add(saleBill);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetSaleBill", new { id = saleBill.Id }, saleBill);
+
         }
 
         //TODO remove delete functionality
@@ -116,7 +163,7 @@ namespace LogeenStockManagement.Controllers
             return _context.SaleBills.Any(e => e.Id == id);
         }
 
-        protected bool IsSaleBillDataNotValid(SaleBill SaleBill)
+        protected bool IsSaleBillDataNotValid(SaleBill saleBill)
         {
             /*
              * ID INT IDENTITY(1,1),
@@ -140,21 +187,23 @@ namespace LogeenStockManagement.Controllers
               Constraint BillTypeCheck check(BillType in ('Cash','Debit') )
              */
             //foreign keys can not refer to Not Existed
-            bool StockExisted = _context.Stocks.Any(s => s.Id == SaleBill.StockId);
-            bool taxExisted = _context.Taxes.Any(t => t.Id == SaleBill.TaxId);
-            bool PayMethodExisted = _context.PaymentMethods.Any(p => p.Id == SaleBill.PayMethodId);
-            bool ClientExisted = _context.Clients.Any(c => c.Id == SaleBill.ClientId);
+            bool StockExisted = _context.Stocks.Any(s => s.Id == saleBill.StockId);
+            bool taxExisted = _context.Taxes.Any(t => t.Id == saleBill.TaxId);
+            bool PayMethodExisted = _context.PaymentMethods.Any(p => p.Id == saleBill.PayMethodId);
+            bool ClientExisted = _context.Clients.Any(c => c.Id == saleBill.ClientId);
 
             // UNIQUE Prorerty must to be Not Existed before
-            bool BillCodeRepeat = _context.SaleBills.Any((b) => b.BillCode == SaleBill.BillCode && b.Id != SaleBill.Id);
-            bool BillTypevalid = SaleBill.BillType == "Cash" || SaleBill.BillType == "Debit";
+            bool BillCodeRepeat = _context.SaleBills.Any((b) => b.BillCode == saleBill.BillCode && b.Id != SaleBill.Id);
+            bool BillTypevalid = saleBill.BillType == "Cash" || saleBill.BillType == "Debit";
 
             //Not NUll properties + chech Foreign and Uniqe result
             if (
-                SaleBill.BillCode == null || SaleBill.CheckNumber == null || SaleBill.BillTotalPrice == 0 ||
+                saleBill.BillCode == null || saleBill.CheckNumber == null || 
                 !StockExisted || !taxExisted || !PayMethodExisted || !ClientExisted ||
                 !BillTypevalid || BillCodeRepeat||
-                !DateTime.TryParse(SaleBill.Date.ToString(),out _)
+                !DateTime.TryParse(saleBill.Date.ToString(),out _)||
+                saleBill.SaleBillProducts.Count==0
+                //||saleBill.BillTotalPrice == 0
                 )
             {
                 return true;
@@ -167,6 +216,22 @@ namespace LogeenStockManagement.Controllers
         }
 
 
+        protected bool StockProductExists(int ProductId, int StockId, DateTime ProductionDate, out StockProduct stockProduct)
+        {
+            stockProduct = _context.StockProducts.
+                 Where(sp => sp.StockId == StockId
+                 && sp.ProductId == ProductId
+                 && sp.ProductionDate == ProductionDate).FirstOrDefault();
+
+            if (stockProduct == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
 
     }
 }
