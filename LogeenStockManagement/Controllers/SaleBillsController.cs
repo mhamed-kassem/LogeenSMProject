@@ -158,6 +158,24 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
+        // GET: api/SaleBills/id/5/products
+        [Route("/id/{billId}/Products")]
+        [HttpGet]
+        public IEnumerable<SaleBillProduct> GetSaleProductsByBillId(int billId)
+        {
+            return _context.SaleBills.Find(billId).SaleBillProducts.ToList();
+        }
+
+        // GET: api/SaleBills/code/a5bc/products
+        [Route("/code/{billCode}/Products")]
+        [HttpGet]
+        public IEnumerable<SaleBillProduct> GetSaleProductsByBillCode(string billCode)
+        {
+            return _context.SaleBills.Where(b => b.BillCode == billCode).FirstOrDefault().SaleBillProducts.ToList();
+        }
+
+
+
         private bool SaleBillExists(int id)
         {
             return _context.SaleBills.Any(e => e.Id == id);
@@ -193,7 +211,7 @@ namespace LogeenStockManagement.Controllers
             bool ClientExisted = _context.Clients.Any(c => c.Id == saleBill.ClientId);
 
             // UNIQUE Prorerty must to be Not Existed before
-            bool BillCodeRepeat = _context.SaleBills.Any((b) => b.BillCode == saleBill.BillCode && b.Id != SaleBill.Id);
+            bool BillCodeRepeat = _context.SaleBills.Any((b) => b.BillCode == saleBill.BillCode && b.Id != saleBill.Id);
             bool BillTypevalid = saleBill.BillType == "Cash" || saleBill.BillType == "Debit";
 
             //Not NUll properties + chech Foreign and Uniqe result

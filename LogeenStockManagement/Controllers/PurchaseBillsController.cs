@@ -176,6 +176,7 @@ namespace LogeenStockManagement.Controllers
         {
             return  _context.PurchaseBills.Find(billId).PurchaseProducts.ToList();
         }
+
         // GET: api/PurchaseBills/code/a5bc/products
         [Route("/code/{billCode}/Products")]
         [HttpGet]
