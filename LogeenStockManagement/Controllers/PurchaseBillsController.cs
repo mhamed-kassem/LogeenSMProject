@@ -166,6 +166,27 @@ namespace LogeenStockManagement.Controllers
             return NoContent();
         }
 
+
+
+
+        // GET: api/PurchaseBills/id/5/products
+        [Route("/id/{billId}/Products")]
+        [HttpGet]
+        public IEnumerable<PurchaseProduct> GetPurchaseProductsByBillId(int billId)
+        {
+            return  _context.PurchaseBills.Find(billId).PurchaseProducts.ToList();
+        }
+        // GET: api/PurchaseBills/code/a5bc/products
+        [Route("/code/{billCode}/Products")]
+        [HttpGet]
+        public IEnumerable<PurchaseProduct> GetPurchaseProductsByBillCode(string billCode)
+        {
+            return _context.PurchaseBills.Where(b=>b.BillCode== billCode).FirstOrDefault().PurchaseProducts.ToList();
+        }
+
+
+
+
         private bool PurchaseBillExists(int id)
         {
             return _context.PurchaseBills.Any(e => e.Id == id);

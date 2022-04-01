@@ -33,6 +33,7 @@ namespace LogeenStockManagement
             {
                 options.UseSqlServer(Configuration.GetConnectionString("LogeenConnectionString"));
             });
+
             //cors
             services.AddCors();
 
