@@ -77,20 +77,26 @@ namespace LogeenStockManagement.Controllers
         {
             if (IsSaleBillDataNotValid(saleBill))
             {
-                return BadRequest();
+                return BadRequest(new {
+                    ErrorStatus = "Validation",
+                        Data = "",
+                        Msg = "Invalid Sale Bill Data."
+                    });
             }
 
 
             foreach (SaleBillProduct item in saleBill.SaleBillProducts)
             {
-                item.Discount = item.Product.Discount.UnitCount <= item.AmountToSell && item.Product.Discount.EndDate > DateTime.Today ? item.Product.Discount.DiscountValue : 0;
-                item.TotalPrice = item.AmountToSell * item.Product.SellingPrice - (double)item.Discount;
+                Product productType = _context.Products.Find(item.ProductId);
+
+                item.Discount = productType.Discount.UnitCount <= item.AmountToSell && productType.Discount.EndDate > DateTime.Today ? productType.Discount.DiscountValue : 0;
+                item.TotalPrice = item.AmountToSell * productType.SellingPrice - (double)item.Discount;
 
                 saleBill.BillTotalPrice += item.TotalPrice;
 
                 //drop from Stock products table (test?)
                 StockProduct stockProduct;                                       /*item.ProductionDate*/
-                if (StockProductExists(item.ProductId, item.SaleBill.StockId, item.ProductionDate, out stockProduct))
+                if (StockProductExists(item.ProductId, saleBill.StockId, item.ProductionDate, out stockProduct))
                 {
                     //stockProduct.Amount -= item.Amount;
                     if (stockProduct.Amount > item.AmountToSell)
@@ -104,29 +110,44 @@ namespace LogeenStockManagement.Controllers
                     }
                     else
                     {
-                        return BadRequest();
+                        return BadRequest(new
+                        {
+                            ErrorStatus = "Amount",
+                            Data = stockProduct.Amount,
+                            Msg = "Amount to sell: "+item.AmountToSell+" from :"+productType.Name+": not avaliable all. stock amount: "+stockProduct.Amount
+                        });
                     }
                 }
                 else
                 {
-                    return BadRequest();
+                    return BadRequest(new
+                    {
+                        ErrorStatus = "NotExisted",
+                        Data = item.ProductionDate,
+                        Msg = "Product: "+productType.Name+" Not Existed in Stock:id: "+saleBill.StockId+" with that Production Date: "+item.ProductionDate
+                    });
                 }
 
             }
 
-            saleBill.Discount = saleBill.Client.Discount.EndDate > DateTime.Today ? saleBill.Client.Discount.DiscountValue : 0; 
+            Client client = _context.Clients.Find(saleBill.ClientId);
+            saleBill.Discount = client.Discount.EndDate > DateTime.Today ? client.Discount.DiscountValue : 0; 
 
             saleBill.BillTotalPrice -= saleBill.Discount;
-            saleBill.BillTotalPrice += saleBill.BillTotalPrice / 100 * saleBill.Tax.Percentage;
+
+            Tax tax = _context.Taxes.Find(saleBill.TaxId);
+            saleBill.BillTotalPrice += saleBill.BillTotalPrice / 100 * tax.Percentage;
 
             saleBill.Remaining = saleBill.BillTotalPrice - saleBill.Paidup;
 
-            saleBill.PayMethod.Balance += saleBill.Paidup;
+            PaymentMethod payment = _context.PaymentMethods.Find(saleBill.PayMethodId);
+            payment.Balance += saleBill.Paidup;
 
-            saleBill.Client.BalanceOutstand += saleBill.Remaining;
+            client.BalanceOutstand += saleBill.Remaining;
 
 
             _context.SaleBills.Add(saleBill);
+
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetSaleBill", new { id = saleBill.Id }, saleBill);
@@ -218,11 +239,11 @@ namespace LogeenStockManagement.Controllers
 
             //Not NUll properties + chech Foreign and Uniqe result
             if (
-                saleBill.BillCode == null || saleBill.CheckNumber == null || 
+                saleBill.BillCode == null || saleBill.CheckNumber == null ||
                 !StockExisted || !taxExisted || !PayMethodExisted || !ClientExisted ||
-                !BillTypevalid || BillCodeRepeat||
-                !DateTime.TryParse(saleBill.Date.ToString(),out _)||
-                saleBill.SaleBillProducts.Count==0
+                !BillTypevalid || BillCodeRepeat ||
+                !DateTime.TryParse(saleBill.Date.ToString(), out _) ||
+                saleBill.SaleBillProducts.Count == 0
                 //||saleBill.BillTotalPrice == 0
                 )
             {
@@ -230,6 +251,14 @@ namespace LogeenStockManagement.Controllers
             }
             else
             {
+                foreach (SaleBillProduct item in saleBill.SaleBillProducts)
+                {
+                    if (item.AmountToSell <= 0 || !_context.Products.Any(p => p.Id == item.ProductId))
+                    {
+                        return true;
+                    }
+                }
+
                 return false;
             }
 

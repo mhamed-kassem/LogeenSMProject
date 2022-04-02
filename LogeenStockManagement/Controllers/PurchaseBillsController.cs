@@ -80,61 +80,87 @@ namespace LogeenStockManagement.Controllers
             //validation section2
             if (IsPurchaseBillDataNotValid(purchaseBill))
             {
-                return BadRequest();
+                return BadRequest(new {
+                    ErrorStatus = "Validation",
+                        Data = "",
+                        Msg = "invalid Purchase bill Data."
+                    });
 
             }
 
 
-
+            List<StockProduct> stockProducts= new List<StockProduct>();
             foreach (PurchaseProduct item in purchaseBill.PurchaseProducts)
             {
+                Product productType = _context.Products.Find(item.ProductId);
+
                 DateTime ExpireDate = item.ProductionDate;
-                if (ExpireDate.AddMonths(item.Product.ExpiryPeriod) >= DateTime.Today)
+
+                ExpireDate.AddMonths(productType.ExpiryPeriod);
+
+                if (ExpireDate <= DateTime.Today)
                 {
                     return BadRequest(new
                     {
                         ErrorStatus = "Expired Product",
                         Data = item,
-                        Msg = item.Product.Name + " with Production date: " + item.ProductionDate + "  Expired."
+                        Msg = productType.Name + " with Production date: " + item.ProductionDate + "  Expired."
                     });
                 }
-                item.TotalPrice = item.Amount * item.Product.PurchasingPrice - (double)item.Discount;
+                item.TotalPrice = item.Amount * productType.PurchasingPrice - (double)item.Discount;
 
                 purchaseBill.BillTotal += item.TotalPrice;
 
                 //Add to Stock products table test?
-                StockProduct stockProduct;                                       /*item.ProductionDate*/
-                if (StockProductExists(item.ProductId, item.PurchaseBill.StockId, item.ProductionDate, out stockProduct))
+                StockProduct stockProduct;
+                if (StockProductExists(item.ProductId, purchaseBill.StockId, item.ProductionDate, out stockProduct))
                 {
                     stockProduct.Amount += item.Amount;
                 }
                 else
                 {
-                    stockProduct = new StockProduct
-                    {
-                        ProductId = item.ProductId,
-                        StockId = item.PurchaseBill.StockId,
-                        Amount = item.Amount,
-                        ProductionDate = item.ProductionDate//ProductionDate 
-                    };
+                    stockProduct = stockProducts.Find(sp => sp.StockId == purchaseBill.StockId &&
+                      sp.ProductId == item.ProductId && sp.ProductionDate == item.ProductionDate);
 
-                    _context.StockProducts.Add(stockProduct);
+                    if (stockProduct != null)
+                    {
+                        stockProduct.Amount += item.Amount;
+                    }
+                    else
+                    {
+                        stockProducts.Add(new StockProduct
+                        {
+                            ProductId = item.ProductId,
+                            StockId = purchaseBill.StockId,
+                            Amount = item.Amount,
+                            ProductionDate = item.ProductionDate
+                        });
+
+                    }
+                   
                 }
 
             }
 
+            
+
             purchaseBill.BillTotal -= purchaseBill.Discount;
-            purchaseBill.BillTotal += purchaseBill.BillTotal / 100 * purchaseBill.Tax.Percentage;
+
+            Tax billTax = _context.Taxes.Find(purchaseBill.TaxId);
+            purchaseBill.BillTotal += purchaseBill.BillTotal / 100 * billTax.Percentage;
 
             purchaseBill.Remaining = purchaseBill.BillTotal - purchaseBill.Paidup;
 
-            purchaseBill.PayMethod.Balance -= purchaseBill.Paidup;
+            PaymentMethod payment = _context.PaymentMethods.Find(purchaseBill.PayMethodId);
+            payment.Balance -= purchaseBill.Paidup;
 
-            purchaseBill.Supplier.BalanceDebit += purchaseBill.Remaining;
-
+            Supplier supplier = _context.Suppliers.Find(purchaseBill.SupplierId);
+            supplier.BalanceDebit += purchaseBill.Remaining;
 
 
             _context.PurchaseBills.Add(purchaseBill);
+
+            _context.StockProducts.AddRange(stockProducts);
 
             await _context.SaveChangesAsync();
 
@@ -213,13 +239,22 @@ namespace LogeenStockManagement.Controllers
                 || !BillTypevalid || BillCodeRepeat
                 || !DateTime.TryParse(purchaseBill.Date.ToString(), out _)
                 || purchaseBill.PurchaseProducts.Count == 0 
-                || purchaseBill.BillTotal == 0
+                //|| purchaseBill.BillTotal == 0
                 )
             {
-                return true;
+                    return true;
             }
             else
             {
+
+                foreach (PurchaseProduct item in purchaseBill.PurchaseProducts)
+                {
+                    if (item.Amount <= 0 || !_context.Products.Any(p=>p.Id==item.ProductId))
+                    {
+                        return true;
+                    }
+                }
+
                 return false;
             }
 
