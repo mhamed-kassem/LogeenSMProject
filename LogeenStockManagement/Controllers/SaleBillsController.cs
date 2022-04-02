@@ -159,19 +159,21 @@ namespace LogeenStockManagement.Controllers
         }
 
         // GET: api/SaleBills/id/5/products
-        [Route("/id/{billId}/Products")]
+        [Route("id/{billId}/SaleProducts")]
         [HttpGet]
         public IEnumerable<SaleBillProduct> GetSaleProductsByBillId(int billId)
         {
-            return _context.SaleBills.Find(billId).SaleBillProducts.ToList();
+            return _context.SaleBillProducts.Where(p=>p.SaleBillId==billId).ToList();
         }
 
         // GET: api/SaleBills/code/a5bc/products
-        [Route("/code/{billCode}/Products")]
+        [Route("code/{billCode}/SaleProducts")]
         [HttpGet]
         public IEnumerable<SaleBillProduct> GetSaleProductsByBillCode(string billCode)
         {
-            return _context.SaleBills.Where(b => b.BillCode == billCode).FirstOrDefault().SaleBillProducts.ToList();
+            int BillId = _context.SaleBills.Where(b => b.BillCode == billCode).Select(b => b.Id).FirstOrDefault();
+            return _context.SaleBillProducts.Where(p => p.SaleBillId == BillId).Select(p => p).ToList();
+
         }
 
 

@@ -133,10 +133,10 @@ namespace LogeenStockManagement.Controllers
             bool TypeCheckValid = paymentMethod.Type == "Bank" || paymentMethod.Type == "MoneySafe";
 
             // UNIQUE Prorerty must to be Not Existed before                                               
-            bool NameExisted = _context.PaymentMethods.Any((p) => p.Name == paymentMethod.Name && p.Id != paymentMethod.Id);
+            bool NameRepeat = _context.PaymentMethods.Any((p) => p.Name == paymentMethod.Name && p.Id != paymentMethod.Id);
 
             //Not NUll properties + chech Foreign and Uniqe result
-            if (paymentMethod.Name == null ||!NameExisted ||!TypeCheckValid)
+            if (paymentMethod.Name == null ||NameRepeat ||!TypeCheckValid)
             {
                 return true;
             }
