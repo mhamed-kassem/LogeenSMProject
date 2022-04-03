@@ -107,7 +107,7 @@ namespace LogeenStockManagement.Controllers
                         Msg = productType.Name + " with Production date: " + item.ProductionDate + "  Expired."
                     });
                 }
-                item.TotalPrice = item.Amount * productType.PurchasingPrice - (double)item.Discount;
+                item.TotalPrice = item.Amount * productType.PurchasingPrice;
 
                 purchaseBill.BillTotal += item.TotalPrice;
 
@@ -152,6 +152,10 @@ namespace LogeenStockManagement.Controllers
             purchaseBill.Remaining = purchaseBill.BillTotal - purchaseBill.Paidup;
 
             PaymentMethod payment = _context.PaymentMethods.Find(purchaseBill.PayMethodId);
+            if (payment.Balance < purchaseBill.Paidup)
+            {
+                return BadRequest();
+            }
             payment.Balance -= purchaseBill.Paidup;
 
             Supplier supplier = _context.Suppliers.Find(purchaseBill.SupplierId);

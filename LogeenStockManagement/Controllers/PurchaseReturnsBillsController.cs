@@ -81,11 +81,70 @@ namespace LogeenStockManagement.Controllers
             if (IsPurchaseReturnsBillDataNotValid(purchaseReturnsBill))
             {
                 return BadRequest();
+            }
+            
+            PurchaseBill purchase = _context.PurchaseBills.Find(purchaseReturnsBill.PurchaseBillId);
+            Tax ReturnTax = _context.Taxes.Find(purchaseReturnsBill.TaxId);
+           
 
+            foreach (ReturnPurchaseProduct item in purchaseReturnsBill.ReturnPurchaseProducts)
+            {
+                PurchaseProduct purchaseProduct = await _context.PurchaseProducts.FindAsync(item.PurchaseProductId);
+
+
+                //drop from Stock products table (test?)
+                StockProduct stockProduct;                                       /*item.ProductionDate*/
+                if (StockProductExists(purchaseProduct.ProductId, purchase.StockId, purchaseProduct.ProductionDate, out stockProduct))
+                {
+                    Product productType = _context.Products.Find(purchaseProduct.ProductId);
+                    purchaseReturnsBill.NetMoney += item.AmountReturned * productType.PurchasingPrice;
+
+                    //stockProduct.Amount -= item.Amount;
+                    if (stockProduct.Amount > item.AmountReturned)
+                    {
+                        stockProduct.Amount -= item.AmountReturned;
+                    }
+                    else if (stockProduct.Amount == item.AmountReturned)
+                    {
+                        _context.StockProducts.Remove(stockProduct);
+                    }
+                    //else
+                    //{
+                    //    return BadRequest(new
+                    //    {
+                    //        ErrorStatus = "Amount",
+                    //        Data = stockProduct.Amount,
+                    //        Msg = "Amount to Return: " + item.AmountReturned + " from :" + purchaseProduct.Product.Name + ": is more than amount:" + stockProduct.Amount+"in Stock: "+purchase.Stock.Name
+                    //    });
+                    //}
+                }
+                else
+                {
+                    return BadRequest(new
+                    {
+                        ErrorStatus = "NotExisted in stock",
+                        Data = purchaseProduct.Product.Name,
+                        Msg = "Product: " + purchaseProduct.Product.Name + " Not Existed in Stock: " + purchase.Stock.Name + " with that Production Date: " + purchaseProduct.ProductionDate
+                    });
+                }
             }
 
+            purchaseReturnsBill.NetMoney -= purchaseReturnsBill.NetMoney / 100 * ReturnTax.Percentage;
+
+            Supplier supplier = _context.Suppliers.Find(purchase.SupplierId);
+            if (purchaseReturnsBill.NetMoney > supplier.BalanceDebit)
+            {
+                PaymentMethod payment = _context.PaymentMethods.Find(purchaseReturnsBill.PayMethodId);
+                payment.Balance += purchaseReturnsBill.NetMoney - supplier.BalanceDebit;
+                supplier.BalanceDebit = 0;
+            }
+            else
+            {
+                supplier.BalanceDebit -= purchaseReturnsBill.NetMoney;
+            }
 
             _context.PurchaseReturnsBills.Add(purchaseReturnsBill);
+            
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetPurchaseReturnsBill", new { id = purchaseReturnsBill.Id }, purchaseReturnsBill);
@@ -136,10 +195,35 @@ namespace LogeenStockManagement.Controllers
             }
             else
             {
+                foreach(ReturnPurchaseProduct item in purchaseReturnsBill.ReturnPurchaseProducts)
+                {
+                    if (!_context.PurchaseProducts.Any(pp => pp.Id == item.PurchaseProductId&&pp.Amount>=item.AmountReturned))
+                    {
+                        return true;
+                    }
+                }
+
                 return false;
             }
         }
 
+
+        protected bool StockProductExists(int ProductId, int StockId, DateTime ProductionDate, out StockProduct stockProduct)
+        {
+            stockProduct = _context.StockProducts.
+                 Where(sp => sp.StockId == StockId
+                 && sp.ProductId == ProductId
+                 && sp.ProductionDate == ProductionDate).FirstOrDefault();
+
+            if (stockProduct == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
 
     }
 }
