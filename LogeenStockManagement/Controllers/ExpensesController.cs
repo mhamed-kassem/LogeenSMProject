@@ -81,8 +81,26 @@ namespace LogeenStockManagement.Controllers
                 return BadRequest();
             }
             //--------------
+            if (_context.ExpenseTypes.Any(t => t.Id == expense.TypeId && t.Name == "Salary"))
+            {
+                expense.Value = _context.Employees.Where(emp => emp.Id == expense.EmployeeId).Select(emp => emp.Salary).FirstOrDefault();           
+            }
+            PaymentMethod payment = _context.PaymentMethods.Find(expense.PayMethodId);
+
+            if (payment.Balance < expense.Value)
+            {
+                return BadRequest(new
+                {
+                    ErrorStatus = "paymentBalance",
+                    Data = payment.Name,
+                    Msg = "Payment Method: "+payment.Name+" do not have enough balance."
+                });
+            }
+
+            payment.Balance -= expense.Value;
 
             _context.Expenses.Add(expense);
+
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetExpense", new { id = expense.Id }, expense);

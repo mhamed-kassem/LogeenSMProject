@@ -79,7 +79,23 @@ namespace LogeenStockManagement.Controllers
             {
                 return BadRequest();
             }
-            
+
+            Supplier supplier = _context.Suppliers.Find(exportPayment.SupplierId);
+            PaymentMethod payment = _context.PaymentMethods.Find(exportPayment.PayMethodId);
+
+            if (payment.Balance < exportPayment.PayedBalance)
+            {
+                return BadRequest(new
+                {
+                    ErrorStatus = "paymentBalance",
+                    Data = payment.Name,
+                    Msg = "Payment Method: " + payment.Name + " do not have enough balance."
+                });
+            }
+
+            payment.Balance -= exportPayment.PayedBalance;
+            supplier.BalanceDebit -= exportPayment.PayedBalance;
+
             _context.ExportPayments.Add(exportPayment);
             await _context.SaveChangesAsync();
 

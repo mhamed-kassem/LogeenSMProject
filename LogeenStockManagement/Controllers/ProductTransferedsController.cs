@@ -126,8 +126,7 @@ namespace LogeenStockManagement.Controllers
 
                 _context.StockProducts.Add(ProductToStock);
             }
-            //TODO throw StockProduct Controller Actions
-            //
+          
             _context.ProductTransfereds.Add(productTransfered);
 
             await _context.SaveChangesAsync();

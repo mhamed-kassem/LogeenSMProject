@@ -75,11 +75,17 @@ namespace LogeenStockManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<ImportPayment>> PostImportPayment(ImportPayment importPayment)
         {
-           if (IsImportPaymentDataNotValid(importPayment))
+            if (IsImportPaymentDataNotValid(importPayment))
             {
                 return BadRequest();
             }
-            
+
+            Client client = _context.Clients.Find(importPayment.ClientId);
+            PaymentMethod payment = _context.PaymentMethods.Find(importPayment.PayMethodId);
+
+            payment.Balance += importPayment.PayedBalance;
+            client.BalanceOutstand -= importPayment.PayedBalance;
+
             _context.ImportPayments.Add(importPayment);
             await _context.SaveChangesAsync();
 

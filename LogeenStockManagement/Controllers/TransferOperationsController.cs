@@ -80,7 +80,51 @@ namespace LogeenStockManagement.Controllers
                 return BadRequest();
             }
 
+            foreach (ProductTransfered item in transferOperation.ProductTransfereds)
+            {
+                StockProduct stockProductFrom;
+                StockProductExists(
+                    item.ProductId,
+                    transferOperation.FromStockId,
+                    item.ProductionDate,
+                    out stockProductFrom);
+
+                if (stockProductFrom.Amount > item.Amount)
+                {
+                    stockProductFrom.Amount -= item.Amount;
+                }
+                else if (stockProductFrom.Amount == item.Amount)
+                {
+                    _context.StockProducts.Remove(stockProductFrom);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+                StockProduct ProductToStock;
+
+                if (StockProductExists(item.ProductId, transferOperation.ToStockId, item.ProductionDate, out ProductToStock))
+                {
+                    ProductToStock.Amount += item.Amount;
+                }
+                else
+                {
+                    ProductToStock = new StockProduct
+                    {
+                        ProductId = item.ProductId,
+                        StockId = transferOperation.ToStockId,
+                        ProductionDate = item.ProductionDate,
+                        Amount = item.Amount
+                    };
+
+                    _context.StockProducts.Add(ProductToStock);
+                }
+            }
+
+
             _context.TransferOperations.Add(transferOperation);
+            
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTransferOperation", new { id = transferOperation.Id }, transferOperation);
@@ -130,18 +174,50 @@ namespace LogeenStockManagement.Controllers
             bool ToStockExisted = _context.Stocks.Any(s => s.Id == operation.ToStockId);
 
             //Not NUll properties + chech Foreign and Uniqe results
-            if (DateTime.TryParse(operation.Date.ToString(),out _)||
-                !EmployeeExisted||!FromStockExisted||!ToStockExisted)
+            if (DateTime.TryParse(operation.Date.ToString(), out _) ||
+                !EmployeeExisted || !FromStockExisted || !ToStockExisted
+                || operation.ProductTransfereds.Count == 0)
             {
                 return true;
             }
             else
             {
+                foreach (ProductTransfered item in operation.ProductTransfereds)
+                {
+                    if (!_context.StockProducts.Any(p =>
+                        p.StockId == operation.FromStockId
+                        && p.ProductId == item.ProductId
+                        && p.ProductionDate == item.ProductionDate
+                        && p.Amount >= item.Amount)
+                      )
+                    {
+                        return true;
+                    }
+
+                }
+
                 return false;
             }
 
         }
 
+
+        protected bool StockProductExists(int ProductId, int StockId, DateTime ProductionDate, out StockProduct stockProduct)
+        {
+            stockProduct = _context.StockProducts.
+                 Where(sp => sp.StockId == StockId
+                 && sp.ProductId == ProductId
+                 && sp.ProductionDate == ProductionDate).FirstOrDefault();
+
+            if (stockProduct == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
 
     }
 }
