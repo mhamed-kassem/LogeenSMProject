@@ -2,6 +2,7 @@ using LogeenStockManagement.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -34,6 +35,8 @@ namespace LogeenStockManagement
                 options.UseSqlServer(Configuration.GetConnectionString("LogeenConnectionString"));
             });
 
+            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<LogeenStockManagementContext>();
+            services.AddAutoMapper(typeof(Startup));
             //cors
             services.AddCors();
 

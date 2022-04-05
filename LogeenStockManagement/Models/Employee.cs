@@ -17,7 +17,7 @@ namespace LogeenStockManagement.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
-        public decimal? NationalId { get; set; }
+        public decimal NationalId { get; set; }
         public decimal? Phone { get; set; }
         public double Salary { get; set; }
         public string Photo { get; set; }

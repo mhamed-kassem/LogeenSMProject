@@ -143,7 +143,7 @@ namespace LogeenStockManagement.Controllers
             if ( //if with OR:|| if any one true do If`s body  - if(condition){body} 
                 employee.Name == null ||
                 employee.Address == null ||
-                employee.NationalId == null || //again because it have both not null and unique 
+                employee.NationalId == 0|| //again because it have both not null and unique 
                 employee.Salary==0 ||//check null values but for numeric types
                 !StockExisted || // send bad request-NotValid- when foreign key Not Existed 
                 !JobExisted ||

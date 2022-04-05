@@ -178,7 +178,7 @@ namespace LogeenStockManagement.Controllers
             bool PayMethodExisted = _context.PaymentMethods.Any(p => p.Id == saleReturnBill.PayMethodId);
 
             //uniqe
-            bool CodeRepeat = _context.SalesReturnsBills.Any((p) => p.Code == saleReturnBill.Code && p.Id != SaleReturnBill.Id);
+            bool CodeRepeat = _context.SalesReturnsBills.Any((p) => p.Code == saleReturnBill.Code && p.Id != saleReturnBill.Id);
 
             //Not NUll properties + chech Foreign and Uniqe result
             if (
