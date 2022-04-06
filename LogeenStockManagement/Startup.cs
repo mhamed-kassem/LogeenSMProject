@@ -1,3 +1,4 @@
+using Hangfire;
 using LogeenStockManagement.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,11 +37,14 @@ namespace LogeenStockManagement
             });
 
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<LogeenStockManagementContext>();
+            
             services.AddAutoMapper(typeof(Startup));
-            //cors
+
             services.AddCors();
 
             services.AddSwaggerGen();
+
+            //RecurringJob.(() => { },)
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,8 +74,11 @@ namespace LogeenStockManagement
 
             app.UseSwagger();
             app.UseSwaggerUI(c => {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V2");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
             });
+
+            //Auto Expired products Check+
+            RecurringJob.AddOrUpdate(() => RecurringFUNs.ExpirationCheck(), Cron.Daily, TimeZoneInfo.Local);
         }
     }
 }

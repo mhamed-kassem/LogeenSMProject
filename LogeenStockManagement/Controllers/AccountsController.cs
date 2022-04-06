@@ -27,8 +27,9 @@ namespace LogeenStockManagement.Controllers
                 return BadRequest();
 
             var user = _mapper.Map<User>(userForRegistration);
-
+            
             var result = await _userManager.CreateAsync(user, userForRegistration.Password);
+
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description);
@@ -36,7 +37,10 @@ namespace LogeenStockManagement.Controllers
                 return BadRequest(new RegistrationResponseDto { Errors = errors });
             }
 
+            await _userManager.AddToRoleAsync(user, userForRegistration.Role);
+
             return StatusCode(201);
         }
+
     }
 }

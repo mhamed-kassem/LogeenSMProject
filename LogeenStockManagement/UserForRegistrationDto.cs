@@ -4,15 +4,18 @@ namespace LogeenStockManagement
 {
     public class UserForRegistrationDto
     {
-        public string FirstName { get; set; }
+        [Required(ErrorMessage = "Employee ID is required.")]
+        public int EmployeeId { get; set; }
 
-        public string LastName { get; set; }
 
         [Required(ErrorMessage = "Email is required.")]
-        public string Email { get; set; }
+        public string Email { get; set; } //username
+
 
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
+
+        public string Role { get; set; }
 
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
